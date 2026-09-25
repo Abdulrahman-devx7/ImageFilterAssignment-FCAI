@@ -33,13 +33,12 @@ private:
     };
 
     static Image currentImage;
+    static string currentImageName;
 
     static string read_file_name()
     {
         string filename;
-        cin.ignore();
-        cin.clear();
-        getline(cin, filename);
+        getline(cin >> ws, filename);
 
         return filename;
     }
@@ -57,7 +56,7 @@ private:
         return en_main_screen_option(x);
     }
 
-    static bool execute_save_image()
+    static void execute_save_image()
     {
         cout << "Would you like to save the current image to a different file before proceeding? (y/n) ";
         char answer = 'n';
@@ -68,16 +67,28 @@ private:
             cout << "Please, enter the file name: ";
 
             string fileName = read_file_name();
-            return currentImage.saveImage(fileName);
+            currentImage.saveImage(fileName);
         }
+        else
+            currentImage.saveImage(currentImageName);
     }
 
-    static bool execute_load_image()
+    static void execute_load_image_bootup()
     {
         cout << "Please, enter the name of the image you'd like to load: \n";
-        string fileName = read_file_name();
+        currentImageName = read_file_name();
 
-        return currentImage.loadNewImage(fileName);
+        currentImage.loadNewImage(currentImageName);
+
+    }
+
+    static void execute_load_image()
+    {
+        execute_save_image();
+
+        cout << "Please, enter the name of the image you'd like to load: \n";
+        currentImageName = read_file_name();
+
     }
 
     static void execute_grayscale_conversion()
@@ -169,6 +180,12 @@ private:
     {
         cout << "execute_sharpen_image will be here\n";
     }
+
+    static void execute_exit()
+    {
+        execute_save_image();
+    }
+
     static void execute_main_screen_option(en_main_screen_option option)
     {
         switch (option)
@@ -294,7 +311,7 @@ private:
             break;
 
         case cls_main_screen::exit:
-
+            execute_exit();
             break;
 
         default:
@@ -333,8 +350,8 @@ public:
 
     static void Run()
     {
-        if(execute_load_image())
-            execute_main_screen();
+        execute_load_image_bootup();
+        execute_main_screen();
     }
 
 private:
@@ -348,9 +365,9 @@ private:
 };
 
 Image cls_main_screen::currentImage;
+string cls_main_screen::currentImageName; 
 
 int main()
-{
-    
+{   
     cls_main_screen::Run();
 }
