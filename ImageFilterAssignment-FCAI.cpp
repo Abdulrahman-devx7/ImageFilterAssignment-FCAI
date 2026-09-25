@@ -103,7 +103,18 @@ private:
 
     static void execute_inverting_image()
     {
-        cout << "execute_inverting_image will be here\n";
+        for (int i = 0; i < currentImage.width; ++i)
+        {
+            for (int j = 0; j < currentImage.height; ++j)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    currentImage(i, j, k) = 255 - currentImage(i, j, k);
+                }
+            }
+        }
+
+        cout << "Filter applied successfully!\n\n";
     }
 
     static void execute_adding_image()
