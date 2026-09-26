@@ -7,7 +7,11 @@ using namespace std;
 class cls_darken_or_lighten_image_screen
 {
 private:
-    enum submenuChoice {darken_image=1, lighten_image=2};
+    enum submenuChoice
+    {
+        darken_image = 1,
+        lighten_image = 2
+    };
 
     static short readUserInput()
     {
@@ -20,7 +24,8 @@ private:
 
         return choice;
     }
-    static void execute_lighten_image(Image& target)
+    
+    static void execute_lighten_image(Image &target)
     {
         cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
         short percentage = readUserInput();
@@ -39,7 +44,6 @@ private:
                 }
             }
         }
-
     }
 
     static void execute_darken_image(Image &target)
@@ -73,7 +77,6 @@ private:
             system("cls");
             execute_lighten_image(target);
             break;
-
         }
         cout << "Filter applied successfully!\n\n";
     }
@@ -86,7 +89,6 @@ public:
 
         run_chosen_filter(static_cast<submenuChoice>(readUserInput()), target);
     }
-
 };
 
 class cls_execute_cropping_image
@@ -249,7 +251,6 @@ private:
         currentImageName = read_file_name();
 
         currentImage.loadNewImage(currentImageName);
-
     }
 
     static void execute_load_image()
@@ -258,7 +259,6 @@ private:
 
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
-
     }
 
     static void execute_grayscale_conversion()
@@ -307,9 +307,64 @@ private:
         cls_darken_or_lighten_image_screen::run_filter(currentImage);
     }
 
+    static Image apply_resize(int newWidth, int newHeight)
+    {
+        Image newImage(newWidth, newHeight);
+        float scaleWidth = static_cast<float>(currentImage.width) / newWidth;
+        float scaleHeight = static_cast<float>(currentImage.height) / newHeight;
+        for (int h = 0; h < newHeight; h++)
+        {
+            int oldHeightIndex = min(static_cast<int>(h * scaleHeight), currentImage.height - 1);
+            for (int w = 0; w < newWidth; w++)
+            {
+                int oldWidthIndex = min(static_cast<int>(w * scaleWidth), currentImage.width - 1);
+                for (int c = 0; c < currentImage.channels; c++)
+                {
+                    newImage(w, h, c) = currentImage(oldWidthIndex, oldHeightIndex, c);
+                }
+            }
+        }
+        return newImage;
+    }
+
     static void execute_resizing_image()
     {
-        cout << "execute_resizing_image will be here\n";
+        cout << "\nChoose resizing mode:\n";
+        cout << "1 Enter explicit new dimensions (width & height)\n";
+        cout << "2 Enter scale ratio (like 0.5 for half, 2 for double)\n";
+        cout << "enter choice [1, 2]: ";
+        int choice;
+        cin >> choice;
+
+        int newWidth, newHeight;
+        if (choice == 1)
+        {
+            cout << "enter new width and new height: ";
+            cin >> newWidth >> newHeight;
+        }
+        else if (choice == 2)
+        {
+            float ratio;
+            cout << "enter scale ratio (max = 20): ";
+            cin >> ratio;
+            if (ratio > 20)
+                ratio = 20;
+            newWidth = currentImage.width * ratio;
+            newHeight = currentImage.height * ratio;
+        }
+        else
+        {
+            cout << "Invalid\n";
+            return;
+        }
+
+        if (newWidth <= 0 || newHeight <= 0)
+        {
+            cout << "Invalid\n";
+            return;
+        }
+
+        currentImage = apply_resize(newWidth, newHeight);
     }
 
     static void execute_merging_image()
@@ -349,7 +404,15 @@ private:
 
     static void execute_making_image_look_infrared()
     {
-        cout << "execute_image_look_infrared will be here\n";
+        for (int h = 0; h < currentImage.height; h++)
+        {
+            for (int w = 0; w < currentImage.width; w++)
+            {
+                currentImage(w, h, 0) = 255;
+                currentImage(w, h, 1) = 255 - currentImage(w, h, 1);
+                currentImage(w, h, 2) = 255 - currentImage(w, h, 2);
+            }
+        }
     }
 
     static void execute_apply_sepia_filter()
@@ -528,7 +591,6 @@ private:
     }
 
 public:
-
     static void Run()
     {
         execute_load_image_bootup();
@@ -546,9 +608,9 @@ private:
 };
 
 Image cls_main_screen::currentImage;
-string cls_main_screen::currentImageName; 
+string cls_main_screen::currentImageName;
 
 int main()
-{   
+{
     cls_main_screen::Run();
 }
