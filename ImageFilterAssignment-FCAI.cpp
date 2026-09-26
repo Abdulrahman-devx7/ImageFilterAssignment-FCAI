@@ -78,8 +78,6 @@ private:
         cout << "Filter applied successfully!\n\n";
     }
 
-    
-
 public:
     static void run_filter(Image &target)
     {
@@ -89,6 +87,91 @@ public:
         run_chosen_filter(static_cast<submenuChoice>(readUserInput()), target);
     }
 
+};
+
+class cls_execute_cropping_image
+{
+private:
+    static string read_file_name()
+    {
+        string filename;
+        getline(cin >> ws, filename);
+
+        return filename;
+    }
+
+    struct cropImageData
+    {
+        int startPointX = 0;
+        int startPointY = 0;
+
+        int dimensionHeight = 0;
+        int dimensionWidth = 0;
+    };
+
+    static cropImageData readImageCropData()
+    {
+        cropImageData data;
+
+        cout << "Please, input the X coordinate for the starting point for cropping\n";
+        cin >> data.startPointX;
+
+        cout << "\nPlease, input the Y coordinate for the starting point\n";
+        cin >> data.startPointY;
+
+        cout << "\nPlease, input the width dimension\n";
+        cin >> data.dimensionWidth;
+
+        cout << "\nPlease, input the height dimension\n";
+        cin >> data.dimensionHeight;
+        
+        return data;
+    }
+
+    static Image applyFilter(const Image target)
+    {
+        cropImageData imageData = readImageCropData();
+
+        Image croppedImage(imageData.dimensionWidth, imageData.dimensionHeight);
+
+        for (int i = 0; i < imageData.dimensionWidth; ++i)
+        {
+            for (int j = 0; j < imageData.dimensionHeight; ++j)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    croppedImage(i, j, k) = target(imageData.startPointY + i, imageData.startPointX + j, k);
+                }
+            }
+        }
+        return croppedImage;
+    }
+
+    static void determineSaveDestination(Image &originalImage,Image &croppedImage, const string &imageFileName)
+    {
+        cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
+
+        char answer = 'n';
+        cin >> answer;
+
+        if (tolower(answer) == 'y')
+        {
+            cout << "\nPlease, enter the file name: ";
+
+            string fileName = read_file_name();
+            croppedImage.saveImage(fileName);
+        }
+        else
+            originalImage = croppedImage;
+    }
+
+public:
+    static void run_filter(Image &target, const string &imageFileName)
+    {
+        Image croppedImage = applyFilter(target);
+        cout << "Cropping applied successfully!\n\n";
+        determineSaveDestination(target, croppedImage, imageFileName);
+    }
 };
 
 class cls_main_screen
@@ -241,7 +324,7 @@ private:
 
     static void execute_cropping_image()
     {
-        cout << "execute_cropping_image will be here\n";
+        cls_execute_cropping_image::run_filter(currentImage, currentImageName);
     }
 
     static void execute_blurring_image()
