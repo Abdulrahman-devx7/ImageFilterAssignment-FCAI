@@ -5,6 +5,241 @@
 #include "Image_Class.h"
 using namespace std;
 
+class cls_common_functions
+{
+public:
+    static void execute_grayscale_conversion(Image& my_image)
+    {
+        for (int x = 0; x < my_image.width; x++)
+        {
+            for (int y = 0; y < my_image.height; y++)
+            {
+                int average{};
+                for (int rgb_color = 0; rgb_color < my_image.channels; rgb_color++)
+                {
+                    average += my_image(x, y, rgb_color);
+                }
+
+                average /= 3;
+
+                for (int rgb_color = 0; rgb_color < my_image.channels; rgb_color++)
+                {
+                    my_image(x, y, rgb_color) = average;
+                }
+            }
+        }
+    }
+};
+
+class cls_black_and_White_conversion_screen
+{
+private:
+    enum en_black_and_White_conversion_screen_option
+    {
+        make_black_and_white_conversion = 1,
+        save_image,
+        load_image
+    };
+
+    static void exectue_make_black_and_white_conversion()
+    {
+        //cout << "exectue_make_black_and_white_conversion will be here\n";
+
+        cls_common_functions::execute_grayscale_conversion(cls_main_screen::currentImage);
+
+        for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+        {
+            for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+            {
+
+
+                for (int rgb_color = 0; rgb_color < cls_main_screen::currentImage.channels; rgb_color++)
+                {
+                    if (cls_main_screen::currentImage(x, y, rgb_color) >= 128)
+                    {
+                        cls_main_screen::currentImage(x, y, rgb_color) = 255;
+                    }
+                    else
+                    {
+                        cls_main_screen::currentImage(x, y, rgb_color) = 0;
+                    }
+                }
+            }
+        }
+
+    }
+
+    static void execute_saving_image()
+    {
+        cout << "exectue_saving_image will be here\n";
+    }
+
+    static void execute_loading_image()
+    {
+        cout << "exeute_loading_image will be here\n";
+    }
+
+    static void execute_black_and_White_conversion_screen_option(en_black_and_White_conversion_screen_option option)
+    {
+        switch (option)
+        {
+        case cls_black_and_White_conversion_screen::make_black_and_white_conversion:
+            system("cls");
+            exectue_make_black_and_white_conversion();
+            go_back_to_black_and_White_conversion_screen();
+            break;
+
+        case cls_black_and_White_conversion_screen::save_image:
+            system("cls");
+            execute_saving_image();
+            go_back_to_black_and_White_conversion_screen();
+            break;
+
+        case cls_black_and_White_conversion_screen::load_image:
+            system("cls");
+            execute_loading_image();
+            go_back_to_black_and_White_conversion_screen();
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    static void execute_black_and_White_conversion_screen()
+    {
+        cout << "[1]  make black and white conversion.\n";
+        cout << "[2]  save image.\n";
+        cout << "[3]  load image.\n";
+    }
+
+    static void go_back_to_black_and_White_conversion_screen()
+    {
+        cout << "press any key to go back to black_and_White_conversion_screen....";
+        system("pause>0");
+        
+        system("cls");
+        execute_black_and_White_conversion_screen();   
+    }
+};
+
+class cls_rotating_image_screen
+{
+    enum en_rotaing_image_screen_option
+    {
+        e_execute_rotating_image = 1,
+        e_save_image,
+        e_load_image
+    };
+
+    static void execute_rotating_image()
+    {
+        cout << "[1]  rotate by 90 degree.\n";
+        cout << "[2]  rotate by 180 degree.\n";
+        cout << "[3]  rotate by 270 degree.\n";
+
+        short x;
+        cout << "please enter your choice[1, 2, 3]\n";
+        cin >> x;
+
+        
+        switch (x)
+        {
+        case 1:
+        {
+            Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
+            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+            {
+                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(y, cls_main_screen::currentImage.width - 1 - x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+        }
+        case 2:
+        {
+            Image image(cls_main_screen::currentImage.width, cls_main_screen::currentImage.height);
+            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+            {
+                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(cls_main_screen::currentImage.width - 1 - x, cls_main_screen::currentImage.height - 1 - y, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+        }
+
+        case 3:
+        {
+            Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
+            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+            {
+                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(cls_main_screen::currentImage.height - 1 - y, x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+        }
+
+        default:
+            break;
+        }
+
+    }
+
+    static void execute_saving_image()
+    {
+        cout << "exectue_saving_image will be here\n";
+    }
+
+    static void execute_loading_image()
+    {
+        cout << "exeute_loading_image will be here\n";
+    }
+
+    static void execute_rotating_image_option(en_rotaing_image_screen_option option)
+    {
+        switch (option)
+        {
+        case cls_rotating_image_screen::e_execute_rotating_image:
+            system("cls");
+            execute_rotating_image();
+            go_back_to_rotating_image_screen();
+            break;
+        case cls_rotating_image_screen::e_save_image:
+            break;
+        case cls_rotating_image_screen::e_load_image:
+            break;
+        default:
+            break;
+        }
+    }
+
+    static void execute_rotating_image_screen()
+    {
+        cout << "[1]  rotate image.\n";
+        cout << "[2]  save image.\n";
+        cout << "[3]  load image.\n";
+    }
+
+    static void go_back_to_rotating_image_screen()
+    {
+        cout << "press any key to go back to black_and_White_conversion_screen....";
+        system("pause>0");
+
+        system("cls");
+        execute_rotating_image_screen();
+    }
+};
+
 class cls_darken_or_lighten_image_screen
 {
 private:
@@ -179,7 +414,10 @@ public:
 
 class cls_main_screen
 {
-private:
+public:
+    static Image currentImage; // it must be public because other filters are in different classes
+    static string currentImageName; // it must be public because other filters are in different classes
+private: 
     enum en_main_screen_option
     {
         load_image = 1,
@@ -205,12 +443,12 @@ private:
         exit = 21
     };
 
-    static Image currentImage;
-    static string currentImageName;
+
 
     static string read_file_name()
     {
         string filename;
+
         getline(cin >> ws, filename);
 
         return filename;
@@ -734,6 +972,7 @@ private:
         cout << "[19] Apply sepia filter\n";
         cout << "[20] Sharpen image\n";
         cout << "[21] Exit\n";
+
         execute_main_screen_option(read_main_screen_option());
     }
 
@@ -754,8 +993,8 @@ private:
     }
 };
 
-Image cls_main_screen::currentImage;
-string cls_main_screen::currentImageName;
+Image cls_main_screen::currentImage; // initializing static data member
+string cls_main_screen::currentImageName; // initializing static data member
 
 int main()
 {
