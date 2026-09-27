@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <algorithm> 
 #include "Image_Class.h"
 using namespace std;
 
@@ -259,8 +260,8 @@ private:
 
         return choice;
     }
-    
-    static void execute_lighten_image(Image &target)
+
+    static void execute_lighten_image(Image& target)
     {
         cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
         short percentage = readUserInput();
@@ -281,7 +282,7 @@ private:
         }
     }
 
-    static void execute_darken_image(Image &target)
+    static void execute_darken_image(Image& target)
     {
         cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
         short percentage = readUserInput();
@@ -298,7 +299,7 @@ private:
         }
     }
 
-    static void run_chosen_filter(const submenuChoice option, Image &target)
+    static void run_chosen_filter(const submenuChoice option, Image& target)
     {
         switch (option)
         {
@@ -317,7 +318,7 @@ private:
     }
 
 public:
-    static void run_filter(Image &target)
+    static void run_filter(Image& target)
     {
         cout << "[1]  Darken Image\n";
         cout << "[2]  Lighten Image\n";
@@ -361,7 +362,7 @@ private:
 
         cout << "\nPlease, input the height dimension\n";
         cin >> data.dimensionHeight;
-        
+
         return data;
     }
 
@@ -384,7 +385,7 @@ private:
         return croppedImage;
     }
 
-    static void determineSaveDestination(Image &originalImage,Image &croppedImage, const string &imageFileName)
+    static void determineSaveDestination(Image& originalImage, Image& croppedImage, const string& imageFileName)
     {
         cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
 
@@ -403,7 +404,7 @@ private:
     }
 
 public:
-    static void run_filter(Image &target, const string &imageFileName)
+    static void run_filter(Image& target, const string& imageFileName)
     {
         Image croppedImage = applyFilter(target);
         cout << "Cropping applied successfully!\n\n";
@@ -497,11 +498,28 @@ private:
 
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
+        currentImage.loadNewImage(currentImageName); 
     }
 
+  
     static void execute_grayscale_conversion()
     {
-        cout << "execute_grayscale_conversion will be here\n";
+        for (int i = 0; i < currentImage.width; ++i) {
+            for (int j = 0; j < currentImage.height; ++j) {
+                unsigned int avg = 0;
+
+                for (int k = 0; k < 3; ++k) {
+                    avg += currentImage(i, j, k);
+                }
+
+                avg /= 3;
+
+                currentImage(i, j, 0) = avg;
+                currentImage(i, j, 1) = avg;
+                currentImage(i, j, 2) = avg;
+            }
+        }
+        cout << "Grayscale applied successfully!\n";
     }
 
     static void execute_black_and_white_conversion()
@@ -532,7 +550,47 @@ private:
 
     static void execute_flipping_image()
     {
-        cout << "execute_flipping_image will be here\n";
+        int flipChoice;
+        cout << "Do you want to flip (1) Horizontally or (2) Vertically? Enter 1 or 2: ";
+        cin >> flipChoice;
+        cin.ignore();
+
+        if (flipChoice == 1)
+        {
+            for (int i = 0; i < currentImage.width / 2; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        unsigned int temp = currentImage(i, j, k);
+                        currentImage(i, j, k) = currentImage(currentImage.width - 1 - i, j, k);
+                        currentImage(currentImage.width - 1 - i, j, k) = temp;
+                    }
+                }
+            }
+            cout << "Horizontal flip applied successfully!\n";
+        }
+        else if (flipChoice == 2)
+        {
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height / 2; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        unsigned int temp = currentImage(i, j, k);
+                        currentImage(i, j, k) = currentImage(i, currentImage.height - 1 - j, k);
+                        currentImage(i, currentImage.height - 1 - j, k) = temp;
+                    }
+                }
+            }
+            cout << "Vertical flip applied successfully!\n";
+        }
+        else
+        {
+            cout << "Invalid flip choice!\n";
+        }
     }
 
     static void execute_rotating_image()
@@ -607,7 +665,77 @@ private:
 
     static void execute_merging_image()
     {
-        cout << "execute_merging_image will be here\n";
+        string filename2;
+        cout << "Enter the second image name to merge (e.g., .jpg, .bmp, .png, .tga ): ";
+        getline(cin >> ws, filename2);
+
+        Image image2(filename2);
+
+        if (currentImage.width != image2.width || currentImage.height != image2.height)
+        {
+            cout << "\nImages have different sizes!\n";
+            cout << "1. Resize both to biggest height and width and merge.\n";
+            cout << "2. Merge the common area only (crop).\n";
+            cout << "Enter your choice (1 or 2): ";
+            int mergeChoice;
+            cin >> mergeChoice;
+            cin.ignore();
+
+            if (mergeChoice == 1)
+            {
+                int maxWidth = max(currentImage.width, image2.width);
+                int maxHeight = max(currentImage.height, image2.height);
+
+                Image mergedImage(maxWidth, maxHeight);
+
+                for (int i = 0; i < maxWidth; ++i) {
+                    for (int j = 0; j < maxHeight; ++j) {
+                        for (int k = 0; k < 3; ++k) {
+                            int srcX1 = i * currentImage.width / maxWidth;
+                            int srcY1 = j * currentImage.height / maxHeight;
+
+                            int srcX2 = i * image2.width / maxWidth;
+                            int srcY2 = j * image2.height / maxHeight;
+
+                            mergedImage(i, j, k) = (currentImage(srcX1, srcY1, k) + image2(srcX2, srcY2, k)) / 2;
+                        }
+                    }
+                }
+                currentImage = mergedImage;
+            }
+            else if (mergeChoice == 2)
+            {
+                int minWidth = min(currentImage.width, image2.width);
+                int minHeight = min(currentImage.height, image2.height);
+
+                Image mergedImage(minWidth, minHeight);
+
+                for (int i = 0; i < minWidth; ++i) {
+                    for (int j = 0; j < minHeight; ++j) {
+                        for (int k = 0; k < 3; ++k) {
+                            mergedImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
+                        }
+                    }
+                }
+                currentImage = mergedImage;
+            }
+            else
+            {
+                cout << "Invalid choice! Merge cancelled.\n";
+                return;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < currentImage.width; ++i) {
+                for (int j = 0; j < currentImage.height; ++j) {
+                    for (int k = 0; k < 3; ++k) {
+                        currentImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
+                    }
+                }
+            }
+        }
+        cout << "Merge applied successfully!\n";
     }
 
     static void execute_detecting_image()
@@ -627,7 +755,26 @@ private:
 
     static void execute_making_good_natural_sunlight_to_image()
     {
-        cout << "execute_making_good_natural_sunlight_to_image will be here\n";
+        for (int i = 0; i < currentImage.width; ++i) {
+            for (int j = 0; j < currentImage.height; ++j) {
+                int R = currentImage(i, j, 0);
+                int G = currentImage(i, j, 1);
+                int B = currentImage(i, j, 2);
+
+                R += 40;
+                G += 40;
+                B += 40;
+
+                if (R > 255) R = 255;
+                if (G > 255) G = 255;
+                if (B > 255) B = 255; 
+
+                currentImage(i, j, 0) = R;
+                currentImage(i, j, 1) = G;
+                currentImage(i, j, 2) = B;
+            }
+        }
+        cout << "Sunlight Filter applied! Wano is shining now.\n";
     }
 
     static void execute_making_image_like_it_is_in_Den_Den_Mushi_television()
