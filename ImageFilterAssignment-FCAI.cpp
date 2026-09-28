@@ -5,80 +5,6 @@
 #include "Image_Class.h"
 using namespace std;
 
-
-
-class cls_black_and_White_conversion_screen
-{
-private:
-    enum en_black_and_White_conversion_screen_option
-    {
-        make_black_and_white_conversion = 1,
-        save_image,
-        load_image
-    };
-
-    static void exectue_make_black_and_white_conversion()
-    {
-        //cout << "exectue_make_black_and_white_conversion will be here\n";
-
-        
-
-    }
-
-    static void execute_saving_image()
-    {
-        cout << "exectue_saving_image will be here\n";
-    }
-
-    static void execute_loading_image()
-    {
-        cout << "exeute_loading_image will be here\n";
-    }
-
-    static void execute_black_and_White_conversion_screen_option(en_black_and_White_conversion_screen_option option)
-    {
-        switch (option)
-        {
-        case cls_black_and_White_conversion_screen::make_black_and_white_conversion:
-            system("cls");
-            exectue_make_black_and_white_conversion();
-            go_back_to_black_and_White_conversion_screen();
-            break;
-
-        case cls_black_and_White_conversion_screen::save_image:
-            system("cls");
-            execute_saving_image();
-            go_back_to_black_and_White_conversion_screen();
-            break;
-
-        case cls_black_and_White_conversion_screen::load_image:
-            system("cls");
-            execute_loading_image();
-            go_back_to_black_and_White_conversion_screen();
-            break;
-
-        default:
-            break;
-        }
-    }
-
-    static void execute_black_and_White_conversion_screen()
-    {
-        cout << "[1]  make black and white conversion.\n";
-        cout << "[2]  save image.\n";
-        cout << "[3]  load image.\n";
-    }
-
-    static void go_back_to_black_and_White_conversion_screen()
-    {
-        cout << "press any key to go back to black_and_White_conversion_screen....";
-        system("pause>0");
-        
-        system("cls");
-        execute_black_and_White_conversion_screen();   
-    }
-};
-
 class cls_rotating_image_screen
 {
     enum en_rotaing_image_screen_option
@@ -143,7 +69,6 @@ class cls_rotating_image_screen
         
             rotating_with_90_degree();
             break;
-
        
         case with_180_degree:
             rotating_with_180_degree();
