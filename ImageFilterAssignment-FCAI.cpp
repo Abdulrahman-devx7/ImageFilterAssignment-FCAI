@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <algorithm> 
@@ -7,89 +8,91 @@ using namespace std;
 
 class cls_rotating_image_screen
 {
+private:
     enum en_rotaing_image_screen_option
     {
         with_90_degree = 1,
         with_180_degree = 2,
         with_270_degree = 3,
-        go_to_main_menu
+        go_to_main_menu = 4
     };
 
-    static void rotating_with_90_degree()
+    static void rotating_with_90_degree(Image& target)
     {
-        Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
-        for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+        Image image(target.height, target.width);
+        for (int x = 0; x < target.width; x++)
         {
-            for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+            for (int y = 0; y < target.height; y++)
             {
                 for (int rgb_color = 0; rgb_color < 3; rgb_color++)
                 {
-                    image.setPixel(y, cls_main_screen::currentImage.width - 1 - x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    image.setPixel(y, target.width - 1 - x, rgb_color, target.getPixel(x, y, rgb_color));
                 }
             }
         }
+        target = image;
     }
 
-    static void rotating_with_180_degree()
+    static void rotating_with_180_degree(Image& target)
     {
-        Image image(cls_main_screen::currentImage.width, cls_main_screen::currentImage.height);
-        for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+        Image image(target.width, target.height);
+        for (int x = 0; x < target.width; x++)
         {
-            for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+            for (int y = 0; y < target.height; y++)
             {
                 for (int rgb_color = 0; rgb_color < 3; rgb_color++)
                 {
-                    image.setPixel(cls_main_screen::currentImage.width - 1 - x, cls_main_screen::currentImage.height - 1 - y, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    image.setPixel(target.width - 1 - x, target.height - 1 - y, rgb_color, target.getPixel(x, y, rgb_color));
                 }
             }
         }
+        target = image;
     }
 
-    static void rotating_with_270_degree()
+    static void rotating_with_270_degree(Image& target)
     {
-        Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
-        for (int x = 0; x < cls_main_screen::currentImage.width; x++)
+        Image image(target.height, target.width);
+        for (int x = 0; x < target.width; x++)
         {
-            for (int y = 0; y < cls_main_screen::currentImage.height; y++)
+            for (int y = 0; y < target.height; y++)
             {
                 for (int rgb_color = 0; rgb_color < 3; rgb_color++)
                 {
-                    image.setPixel(cls_main_screen::currentImage.height - 1 - y, x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
+                    image.setPixel(target.height - 1 - y, x, rgb_color, target.getPixel(x, y, rgb_color));
                 }
             }
         }
+        target = image;
     }
 
-    static void execute_rotating_image_option(en_rotaing_image_screen_option option)
+    static void execute_rotating_image_option(en_rotaing_image_screen_option option, Image& target)
     {
         switch (option)
         {
-           
         case with_90_degree:
-        
-            rotating_with_90_degree();
+            rotating_with_90_degree(target);
             break;
-       
+
         case with_180_degree:
-            rotating_with_180_degree();
+            rotating_with_180_degree(target);
             break;
 
         case with_270_degree:
-            rotating_with_270_degree();
+            rotating_with_270_degree(target);
             break;
 
         case go_to_main_menu:
-            // chill out the program will handle it by itself
-            break;
+            return;
+
         default:
             break;
-            
         }
 
         cout << "Rotation done successfully\n";
     }
 
-    static void execute_rotating_image()
+public:
+    static void execute_rotating_image(Image& target)
     {
         cout << "[1]  rotate by 90 degree.\n";
         cout << "[2]  rotate by 180 degree.\n";
@@ -100,26 +103,7 @@ class cls_rotating_image_screen
         cout << "please enter your choice[1, 2, 3]\n";
         cin >> x;
 
-        execute_rotating_image_option(en_rotaing_image_screen_option(x));
-       
-    }
-
-
-
-    static void execute_rotating_image_screen()
-    {
-        cout << "[1]  rotate image.\n";
-        cout << "[2]  save image.\n";
-        cout << "[3]  load image.\n";
-    }
-
-    static void go_back_to_rotating_image_screen()
-    {
-        cout << "press any key to go back to black_and_White_conversion_screen....";
-        system("pause>0");
-
-        system("cls");
-        execute_rotating_image_screen();
+        execute_rotating_image_option(en_rotaing_image_screen_option(x), target);
     }
 };
 
@@ -176,7 +160,7 @@ private:
             {
                 for (int k = 0; k < 3; ++k)
                 {
-                    target(i, j, k) = target(i, j, k) * ((100 - percentage) / 100.0);
+                    target(i, j, k) = static_cast<unsigned char>(target(i, j, k) * ((100 - percentage) / 100.0));
                 }
             }
         }
@@ -361,7 +345,7 @@ private:
             cout << "Please, enter the file name: ";
             string fileName = read_file_name();
 
-            while (fileName != currentImageName)
+            while (fileName == currentImageName)
             {
                 cout << "Please, enter another name because this one is as same as your current one: ";
                 string fileName = read_file_name();
@@ -375,11 +359,9 @@ private:
 
     static void execute_load_image_bootup()
     {
-        do
-        {
-            cout << "Please, enter the name of the image you'd like to load: \n";
-            currentImageName = read_file_name();
-        } while (currentImage.loadNewImage(currentImageName));
+        cout << "Please, enter the name of the image you'd like to load: \n";
+        currentImageName = read_file_name();
+        currentImage.loadNewImage(currentImageName);
     }
 
     static void execute_load_image()
@@ -510,7 +492,7 @@ private:
 
     static void execute_rotating_image()
     {
-        cout << "execute_rotating_image will be here\n";
+        cls_rotating_image_screen::execute_rotating_image(currentImage);
     }
 
     static void execute_darkening_or_lightening_conversion()
@@ -560,8 +542,8 @@ private:
             cin >> ratio;
             if (ratio > 20)
                 ratio = 20;
-            newWidth = currentImage.width * ratio;
-            newHeight = currentImage.height * ratio;
+            newWidth = static_cast<int>(currentImage.width * ratio);
+            newHeight = static_cast<int>(currentImage.height * ratio);
         }
         else
         {
@@ -875,7 +857,7 @@ private:
             break;
 
         case cls_main_screen::sharpen_image:
-            //system("cls");
+            //system("cls")exe
             execute_sharpen_image();
             //go_back_to_main_screen();
             break;
