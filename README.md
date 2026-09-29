@@ -1,1 +1,0 @@
-# ImageFilterAssignment-FCAI
