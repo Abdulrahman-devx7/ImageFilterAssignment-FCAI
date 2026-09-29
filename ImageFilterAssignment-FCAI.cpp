@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
-#include <algorithm> 
+#include <algorithm>
 #include "Image_Class.h"
 using namespace std;
 
@@ -17,7 +17,7 @@ private:
         go_to_main_menu = 4
     };
 
-    static void rotating_with_90_degree(Image& target)
+    static void rotating_with_90_degree(Image &target)
     {
         Image image(target.height, target.width);
         for (int x = 0; x < target.width; x++)
@@ -33,7 +33,7 @@ private:
         target = image;
     }
 
-    static void rotating_with_180_degree(Image& target)
+    static void rotating_with_180_degree(Image &target)
     {
         Image image(target.width, target.height);
         for (int x = 0; x < target.width; x++)
@@ -49,7 +49,7 @@ private:
         target = image;
     }
 
-    static void rotating_with_270_degree(Image& target)
+    static void rotating_with_270_degree(Image &target)
     {
         Image image(target.height, target.width);
         for (int x = 0; x < target.width; x++)
@@ -65,7 +65,7 @@ private:
         target = image;
     }
 
-    static void execute_rotating_image_option(en_rotaing_image_screen_option option, Image& target)
+    static void execute_rotating_image_option(en_rotaing_image_screen_option option, Image &target)
     {
         switch (option)
         {
@@ -92,7 +92,7 @@ private:
     }
 
 public:
-    static void execute_rotating_image(Image& target)
+    static void execute_rotating_image(Image &target)
     {
         cout << "[1]  rotate by 90 degree.\n";
         cout << "[2]  rotate by 180 degree.\n";
@@ -128,7 +128,7 @@ private:
         return choice;
     }
 
-    static void execute_lighten_image(Image& target)
+    static void execute_lighten_image(Image &target)
     {
         cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
         short percentage = readUserInput();
@@ -149,7 +149,7 @@ private:
         }
     }
 
-    static void execute_darken_image(Image& target)
+    static void execute_darken_image(Image &target)
     {
         cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
         short percentage = readUserInput();
@@ -166,7 +166,7 @@ private:
         }
     }
 
-    static void run_chosen_filter(const submenuChoice option, Image& target)
+    static void run_chosen_filter(const submenuChoice option, Image &target)
     {
         switch (option)
         {
@@ -185,7 +185,7 @@ private:
     }
 
 public:
-    static void run_filter(Image& target)
+    static void run_filter(Image &target)
     {
         cout << "[1]  Darken Image\n";
         cout << "[2]  Lighten Image\n";
@@ -252,7 +252,7 @@ private:
         return croppedImage;
     }
 
-    static void determineSaveDestination(Image& originalImage, Image& croppedImage, const string& imageFileName)
+    static void determineSaveDestination(Image &originalImage, Image &croppedImage, const string &imageFileName)
     {
         cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
 
@@ -271,7 +271,7 @@ private:
     }
 
 public:
-    static void run_filter(Image& target, const string& imageFileName)
+    static void run_filter(Image &target, const string &imageFileName)
     {
         Image croppedImage = applyFilter(target);
         cout << "Cropping applied successfully!\n\n";
@@ -282,9 +282,9 @@ public:
 class cls_main_screen
 {
 public:
-    static Image currentImage; // it must be public because other filters are in different classes
+    static Image currentImage;      // it must be public because other filters are in different classes
     static string currentImageName; // it must be public because other filters are in different classes
-private: 
+private:
     enum en_main_screen_option
     {
         load_image = 1,
@@ -309,8 +309,6 @@ private:
         sharpen_image = 20,
         exit = 21
     };
-
-
 
     static string read_file_name()
     {
@@ -370,17 +368,20 @@ private:
 
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
-        currentImage.loadNewImage(currentImageName); 
+        currentImage.loadNewImage(currentImageName);
     }
 
 public:
     static void execute_grayscale_conversion()
     {
-        for (int i = 0; i < currentImage.width; ++i) {
-            for (int j = 0; j < currentImage.height; ++j) {
+        for (int i = 0; i < currentImage.width; ++i)
+        {
+            for (int j = 0; j < currentImage.height; ++j)
+            {
                 unsigned int avg = 0;
 
-                for (int k = 0; k < 3; ++k) {
+                for (int k = 0; k < 3; ++k)
+                {
                     avg += currentImage(i, j, k);
                 }
 
@@ -397,7 +398,7 @@ public:
 private:
     static void execute_black_and_white_conversion()
     {
-        //cout << "execute_black_and_white_conversion will be here\n";
+        // cout << "execute_black_and_white_conversion will be here\n";
 
         execute_grayscale_conversion(); // عشان خاطرك يا عوبد
 
@@ -405,7 +406,6 @@ private:
         {
             for (int y = 0; y < cls_main_screen::currentImage.height; y++)
             {
-
 
                 for (int rgb_color = 0; rgb_color < cls_main_screen::currentImage.channels; rgb_color++)
                 {
@@ -585,9 +585,12 @@ private:
 
                 Image mergedImage(maxWidth, maxHeight);
 
-                for (int i = 0; i < maxWidth; ++i) {
-                    for (int j = 0; j < maxHeight; ++j) {
-                        for (int k = 0; k < 3; ++k) {
+                for (int i = 0; i < maxWidth; ++i)
+                {
+                    for (int j = 0; j < maxHeight; ++j)
+                    {
+                        for (int k = 0; k < 3; ++k)
+                        {
                             int srcX1 = i * currentImage.width / maxWidth;
                             int srcY1 = j * currentImage.height / maxHeight;
 
@@ -607,9 +610,12 @@ private:
 
                 Image mergedImage(minWidth, minHeight);
 
-                for (int i = 0; i < minWidth; ++i) {
-                    for (int j = 0; j < minHeight; ++j) {
-                        for (int k = 0; k < 3; ++k) {
+                for (int i = 0; i < minWidth; ++i)
+                {
+                    for (int j = 0; j < minHeight; ++j)
+                    {
+                        for (int k = 0; k < 3; ++k)
+                        {
                             mergedImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
                         }
                     }
@@ -624,9 +630,12 @@ private:
         }
         else
         {
-            for (int i = 0; i < currentImage.width; ++i) {
-                for (int j = 0; j < currentImage.height; ++j) {
-                    for (int k = 0; k < 3; ++k) {
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
                         currentImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
                     }
                 }
@@ -637,7 +646,7 @@ private:
 
     static void execute_detecting_image()
     {
-        //cout << "execute_detecting_image will be here\n";
+        // cout << "execute_detecting_image will be here\n";
 
         for (int x = 0; x < currentImage.width; x++)
         {
@@ -649,7 +658,7 @@ private:
 
                 int bottom = (currentImage.getPixel(x, y - 1, 0) + currentImage.getPixel(x, y - 1, 1) + currentImage(x, y - 1, 2)) / 3;
 
-                int right = (currentImage.getPixel(x + 1, y, 0) + currentImage.getPixel(x + 1, y , 1) + currentImage(x + 1, y , 2)) / 3;
+                int right = (currentImage.getPixel(x + 1, y, 0) + currentImage.getPixel(x + 1, y, 1) + currentImage(x + 1, y, 2)) / 3;
 
                 int left = (currentImage.getPixel(x - 1, y, 0) + currentImage.getPixel(x - 1, y, 1) + currentImage(x - 1, y, 2)) / 3;
 
@@ -660,8 +669,6 @@ private:
                 currentImage.setPixel(x, y, 0, new_rgb);
                 currentImage.setPixel(x, y, 1, new_rgb);
                 currentImage.setPixel(x, y, 2, new_rgb);
-
-
             }
         }
     }
@@ -673,13 +680,55 @@ private:
 
     static void execute_blurring_image()
     {
-        cout << "execute_blurring_image will be here\n";
+        cout << "\nChoose Blur Level:\n";
+        cout << "[1] Light Blur\n";
+        cout << "[2] Medium Blur\n";
+        cout << "[3] Strong Blur\n";
+        cout << "Enter you choice (1-3): ";
+        int choice; cin >> choice;
+
+        int kernelSize = 4;
+        if (choice == 2)
+            kernelSize = 8;
+        else if (choice == 3)
+            kernelSize = 14;
+
+        Image newImage(currentImage);
+        float kernelArea = ((kernelSize * 2) + 1) * ((kernelSize * 2) + 1);
+        for (int h = kernelSize; h + kernelSize < currentImage.height; h++)
+        {
+            for (int w = kernelSize; w + kernelSize < currentImage.width; w++)
+            {
+                int sumRed, sumGreen, sumBlue;
+                sumRed = sumGreen = sumBlue = 0;
+                for (int i = h - kernelSize; i <= h + kernelSize; i++)
+                {
+                    for (int j = w - kernelSize; j <= w + kernelSize; j++)
+                    {
+                        sumRed += currentImage(j, i, 0);
+                        sumGreen += currentImage(j, i, 1);
+                        sumBlue += currentImage(j, i, 2);
+                    }
+                }
+                
+                float avgRed = sumRed / kernelArea;
+                float avgGreen = sumGreen / kernelArea;
+                float avgBlue = sumBlue / kernelArea;
+                newImage(w, h, 0) = avgRed;
+                newImage(w, h, 1) = avgGreen;
+                newImage(w, h, 2) = avgBlue;
+            }
+        }
+        currentImage = newImage;
+        cout << "\nBlur filter applied successfully.\n\n";
     }
 
     static void execute_making_good_natural_sunlight_to_image()
     {
-        for (int i = 0; i < currentImage.width; ++i) {
-            for (int j = 0; j < currentImage.height; ++j) {
+        for (int i = 0; i < currentImage.width; ++i)
+        {
+            for (int j = 0; j < currentImage.height; ++j)
+            {
                 int R = currentImage(i, j, 0);
                 int G = currentImage(i, j, 1);
                 int B = currentImage(i, j, 2);
@@ -688,9 +737,12 @@ private:
                 G += 40;
                 B += 40;
 
-                if (R > 255) R = 255;
-                if (G > 255) G = 255;
-                if (B > 255) B = 255; 
+                if (R > 255)
+                    R = 255;
+                if (G > 255)
+                    G = 255;
+                if (B > 255)
+                    B = 255;
 
                 currentImage(i, j, 0) = R;
                 currentImage(i, j, 1) = G;
@@ -743,43 +795,43 @@ private:
         switch (option)
         {
         case cls_main_screen::load_image:
-            //system("cls");
+            // system("cls");
             execute_load_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::save_image:
-            //system("cls");
+            // system("cls");
             execute_save_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::grayscale_conversion:
-            //system("cls");
+            // system("cls");
             execute_grayscale_conversion();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::black_and_white_conversion:
-            //system("cls");
+            // system("cls");
             execute_black_and_white_conversion();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::inverting_image:
-            //system("cls");
+            // system("cls");
             execute_inverting_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::adding_image:
-            //system("cls");
+            // system("cls");
             execute_adding_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::flipping_image:
-            //system("cls");
+            // system("cls");
             execute_flipping_image();
             go_back_to_main_screen();
             break;
@@ -791,75 +843,75 @@ private:
             break;
 
         case cls_main_screen::darkening_or_lightening_conversion:
-            //system("cls");
+            // system("cls");
             execute_darkening_or_lightening_conversion();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::resizing_image:
-            //system("cls");
+            system("cls");
             execute_resizing_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::merging_image:
-            //system("cls");
+            // system("cls");
             execute_merging_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::detecting_image:
-            //system("cls");
+            // system("cls");
             execute_detecting_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::cropping_image:
-            //system("cls");
+            // system("cls");
             execute_cropping_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::blurring_image:
-            //system("cls");
+            system("cls");
             execute_blurring_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_good_natural_sunlight_to_image:
-            //system("cls");
+            // system("cls");
             execute_making_good_natural_sunlight_to_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_like_it_is_in_Den_Den_Mushi_television:
-            //system("cls");
+            // system("cls");
             execute_making_image_like_it_is_in_Den_Den_Mushi_television();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_look_purple:
-            //system("cls");
+            // system("cls");
             execute_making_image_look_purple();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_look_infrared:
-            //system("cls");
+            // system("cls");
             execute_making_image_look_infrared();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::apply_sepia_filter:
-            //system("cls");
+            // system("cls");
             execute_apply_sepia_filter();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::sharpen_image:
-            //system("cls")exe
+            // system("cls")exe
             execute_sharpen_image();
-            //go_back_to_main_screen();
+            // go_back_to_main_screen();
             break;
 
         case cls_main_screen::exit:
@@ -916,7 +968,7 @@ private:
     }
 };
 
-Image cls_main_screen::currentImage; // initializing static data member
+Image cls_main_screen::currentImage;      // initializing static data member
 string cls_main_screen::currentImageName; // initializing static data member
 
 int main()
