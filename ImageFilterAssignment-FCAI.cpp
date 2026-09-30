@@ -400,7 +400,7 @@ private:
     {
         // cout << "execute_black_and_white_conversion will be here\n";
 
-        execute_grayscale_conversion(); // عشان خاطرك يا عوبد
+        execute_grayscale_conversion(); 
 
         for (int x = 0; x < cls_main_screen::currentImage.width; x++)
         {
@@ -754,7 +754,19 @@ private:
 
     static void execute_making_image_like_it_is_in_Den_Den_Mushi_television()
     {
-        cout << "execute_making_image_like_it_is_in_Den_Den_Mushi_television will be here\n";
+        for (int y = 0; y < currentImage.height; y++)
+        {
+            if (y % 20 < 10)
+            {
+                for (int x = 0; x < currentImage.width; x++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        currentImage.setPixel(x, y, k, currentImage.getPixel(x, y, k) * .3);
+                    }
+                }
+            }
+        }
     }
 
     static void execute_making_image_look_purple()
