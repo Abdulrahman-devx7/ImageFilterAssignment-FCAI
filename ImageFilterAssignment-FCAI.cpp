@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <string>
 #include <algorithm>
+#include <cmath>
 #include "Image_Class.h"
+
 using namespace std;
 
 class cls_rotating_image_screen
@@ -646,31 +648,9 @@ private:
 
     static void execute_detecting_image()
     {
-        // cout << "execute_detecting_image will be here\n";
+        cout << "The Edge Detection Filter will be here\n";
 
-        for (int x = 0; x < currentImage.width; x++)
-        {
-            for (int y = 0; y < currentImage.height; y++)
-            {
-                int current = (currentImage.getPixel(x, y, 0) + currentImage.getPixel(x, y, 1) + currentImage(x, y, 2)) / 3;
-
-                int top = (currentImage.getPixel(x, y + 1, 0) + currentImage.getPixel(x, y + 1, 1) + currentImage(x, y + 1, 2)) / 3;
-
-                int bottom = (currentImage.getPixel(x, y - 1, 0) + currentImage.getPixel(x, y - 1, 1) + currentImage(x, y - 1, 2)) / 3;
-
-                int right = (currentImage.getPixel(x + 1, y, 0) + currentImage.getPixel(x + 1, y, 1) + currentImage(x + 1, y, 2)) / 3;
-
-                int left = (currentImage.getPixel(x - 1, y, 0) + currentImage.getPixel(x - 1, y, 1) + currentImage(x - 1, y, 2)) / 3;
-
-                int difference = (current - top) + (current - bottom) + (current - right) + (current - left);
-
-                int new_rgb = (difference > 100) ? 255 : 0;
-
-                currentImage.setPixel(x, y, 0, new_rgb);
-                currentImage.setPixel(x, y, 1, new_rgb);
-                currentImage.setPixel(x, y, 2, new_rgb);
-            }
-        }
+        //cout << "\nEdge Detection Filter applied successfully.\n\n";
     }
 
     static void execute_cropping_image()
