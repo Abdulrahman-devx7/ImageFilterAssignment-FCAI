@@ -807,55 +807,55 @@ private:
         switch (option)
         {
         case cls_main_screen::load_image:
-            // system("cls");
+            system("cls");
             execute_load_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::save_image:
-            // system("cls");
+            system("cls");
             execute_save_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::grayscale_conversion:
-            // system("cls");
+            system("cls");
             execute_grayscale_conversion();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::black_and_white_conversion:
-            // system("cls");
+            system("cls");
             execute_black_and_white_conversion();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::inverting_image:
-            // system("cls");
+            system("cls");
             execute_inverting_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::adding_image:
-            // system("cls");
+            system("cls");
             execute_adding_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::flipping_image:
-            // system("cls");
+            system("cls");
             execute_flipping_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::rotating_image:
-            system("cls"); // I didn't comment the line because rotating is a sub menu
+            system("cls");
             execute_rotating_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::darkening_or_lightening_conversion:
-            // system("cls");
+            system("cls");
             execute_darkening_or_lightening_conversion();
             go_back_to_main_screen();
             break;
@@ -867,19 +867,19 @@ private:
             break;
 
         case cls_main_screen::merging_image:
-            // system("cls");
+            system("cls");
             execute_merging_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::detecting_image:
-            // system("cls");
+            system("cls");
             execute_detecting_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::cropping_image:
-            // system("cls");
+            system("cls");
             execute_cropping_image();
             go_back_to_main_screen();
             break;
@@ -891,39 +891,39 @@ private:
             break;
 
         case cls_main_screen::making_good_natural_sunlight_to_image:
-            // system("cls");
+            system("cls");
             execute_making_good_natural_sunlight_to_image();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_like_it_is_in_Den_Den_Mushi_television:
-            // system("cls");
+            system("cls");
             execute_making_image_like_it_is_in_Den_Den_Mushi_television();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_look_purple:
-            // system("cls");
+            system("cls");
             execute_making_image_look_purple();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::making_image_look_infrared:
-            // system("cls");
+            system("cls");
             execute_making_image_look_infrared();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::apply_sepia_filter:
-            // system("cls");
+            system("cls");
             execute_apply_sepia_filter();
             go_back_to_main_screen();
             break;
 
         case cls_main_screen::sharpen_image:
-            // system("cls")exe
+            system("cls");
             execute_sharpen_image();
-            // go_back_to_main_screen();
+            go_back_to_main_screen();
             break;
 
         case cls_main_screen::exit:
