@@ -363,3 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 /BlueCar.jpg
 /building.jpg
+
+*.slnx
+*.vcxproj
+*.vcxproj.filters
