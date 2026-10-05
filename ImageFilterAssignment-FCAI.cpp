@@ -289,27 +289,27 @@ public:
 private:
     enum en_main_screen_option
     {
-        load_image = 1,
-        save_image = 2,
-        grayscale_conversion = 3,
-        black_and_white_conversion = 4,
-        inverting_image = 5,
-        adding_image = 6,
-        flipping_image = 7,
-        rotating_image = 8,
-        darkening_or_lightening_conversion = 9,
-        resizing_image = 10,
-        merging_image = 11,
-        detecting_image = 12,
-        cropping_image = 13,
-        blurring_image = 14,
-        making_good_natural_sunlight_to_image = 15,
-        making_image_like_it_is_in_Den_Den_Mushi_television = 16,
-        making_image_look_purple = 17,
-        making_image_look_infrared = 18,
-        apply_sepia_filter = 19,
-        sharpen_image = 20,
-        exit = 21
+        grayscale_conversion = 1,
+        black_and_white_conversion,
+        inverting_image,
+        adding_image,
+        flipping_image,
+        rotating_image,
+        darkening_or_lightening_conversion,
+        resizing_image,
+        merging_image,
+        detecting_image,
+        cropping_image,
+        blurring_image,
+        making_good_natural_sunlight_to_image,
+        making_image_like_it_is_in_Den_Den_Mushi_television,
+        making_image_look_purple,
+        making_image_look_infrared,
+        apply_sepia_filter,
+        sharpen_image,
+        load_image,
+        save_image,
+        exit
     };
 
     static string read_file_name()
@@ -325,12 +325,13 @@ private:
     {
         int x;
 
-        while (!(cin >> x))
+        while (!(cin >> x) || x < 1 || 21 < x)
         {
+            cout << "Invalid input, please enter an integer number between 1 and 21: ";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-
+        
         return en_main_screen_option(x);
     }
 
@@ -348,7 +349,7 @@ private:
             while (fileName == currentImageName)
             {
                 cout << "Please, enter another name because this one is as same as your current one: ";
-                string fileName = read_file_name();
+                fileName = read_file_name();
             }
 
             currentImage.saveImage(fileName);
@@ -359,6 +360,9 @@ private:
 
     static void execute_load_image_bootup()
     {
+        cout << "===========================================================\n";
+        cout << "=====================   Hallo Image   =====================\n";
+        cout << "===========================================================\n";
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
         currentImage.loadNewImage(currentImageName);
@@ -658,6 +662,7 @@ private:
         cls_execute_cropping_image::run_filter(currentImage, currentImageName);
     }
 
+    // Simple Separable Blur
     static void execute_blurring_image()
     {
         cout << "\nChoose Blur Level:\n";
@@ -665,41 +670,72 @@ private:
         cout << "[2] Medium Blur\n";
         cout << "[3] Strong Blur\n";
         cout << "Enter you choice (1-3): ";
-        int choice; cin >> choice;
+        int choice;
+        cin >> choice;
 
-        int kernelSize = 4;
+        int blurRadius = 8;
         if (choice == 2)
-            kernelSize = 8;
+            blurRadius = 18;
         else if (choice == 3)
-            kernelSize = 14;
+            blurRadius = 35;
 
-        Image newImage(currentImage);
-        float kernelArea = ((kernelSize * 2) + 1) * ((kernelSize * 2) + 1);
-        for (int h = kernelSize; h + kernelSize < currentImage.height; h++)
+        /**
+         * Separable box blur:
+         * a standard 2d Box blur applies a (2R+1)^2 operations per pixel
+         * 
+         * here we used Matrix factorization:
+         * | 1 1 1 |          | 1 |
+         * | 1 1 1 |  = 1/9 * | 1 | * | 1 1 1 |
+         * | 1 1 1 |          | 1 | 
+         * 
+         * by applying the horizontal 1D pass first and then the vertical 1D pass.
+         */
+        Image tempImage(currentImage.width, currentImage.height);
+        // pass 1 : horizontal blur
+        for (int h = 0; h < currentImage.height; h++)
         {
-            for (int w = kernelSize; w + kernelSize < currentImage.width; w++)
+            for (int w = 0; w < currentImage.width; w++)
             {
-                int sumRed, sumGreen, sumBlue;
-                sumRed = sumGreen = sumBlue = 0;
-                for (int i = h - kernelSize; i <= h + kernelSize; i++)
+                for (int c = 0; c < currentImage.channels; c++)
                 {
-                    for (int j = w - kernelSize; j <= w + kernelSize; j++)
+                    int sum = 0;
+                    int count = 0;
+                    for (int k = -blurRadius; k <= blurRadius; k++)
                     {
-                        sumRed += currentImage(j, i, 0);
-                        sumGreen += currentImage(j, i, 1);
-                        sumBlue += currentImage(j, i, 2);
+                        // boundary handling
+                        int safeW = max(0, min(currentImage.width - 1, w + k));
+                        sum += currentImage(safeW, h, c);
+                        count++;
                     }
+                    tempImage(w, h, c) = sum / count;
                 }
-                
-                float avgRed = sumRed / kernelArea;
-                float avgGreen = sumGreen / kernelArea;
-                float avgBlue = sumBlue / kernelArea;
-                newImage(w, h, 0) = avgRed;
-                newImage(w, h, 1) = avgGreen;
-                newImage(w, h, 2) = avgBlue;
             }
         }
-        currentImage = newImage;
+        
+        // pass 2 : vertical blur
+        for (int w = 0; w < currentImage.width; w++)
+        {
+            for (int h = 0; h < currentImage.height; h++)
+            {
+                for (int c = 0; c < currentImage.channels; c++)
+                {
+                    int sum = 0;
+                    int count = 0;
+                    for (int k = -blurRadius; k <= blurRadius; k++)
+                    {
+                        // boundary handling
+                        int safeH = max(0, min(currentImage.height - 1, h + k));
+                        sum += tempImage(w, safeH, c);
+                        count++;
+                    }
+                    currentImage(w, h, c) = sum / count;
+                }
+            }
+        }
+        // string newName = "out1.jpg";
+        // currentImage.saveImage(newName);
+        // string openCommand = "start \"\" \"" + newName + "\"";
+        // system(openCommand.c_str());
         cout << "\nBlur filter applied successfully.\n\n";
     }
 
@@ -784,6 +820,7 @@ private:
 
     static void execute_main_screen_option(en_main_screen_option option)
     {
+        system("cls");
         switch (option)
         {
         case cls_main_screen::load_image:
@@ -841,7 +878,7 @@ private:
             break;
 
         case cls_main_screen::resizing_image:
-            system("cls");
+            // system("cls");
             execute_resizing_image();
             go_back_to_main_screen();
             break;
@@ -865,7 +902,7 @@ private:
             break;
 
         case cls_main_screen::blurring_image:
-            system("cls");
+            // system("cls");
             execute_blurring_image();
             go_back_to_main_screen();
             break;
@@ -918,26 +955,29 @@ private:
     static void execute_main_screen()
     {
         system("cls");
-        cout << "[1]  Load image\n";
-        cout << "[2]  Save image\n";
-        cout << "[3]  Grayscale conversion filter\n";
-        cout << "[4]  Black and white conversion filter\n";
-        cout << "[5]  Invert image\n";
-        cout << "[6]  Add a frame\n";
-        cout << "[7]  Flip image\n";
-        cout << "[8]  Rotate image\n";
-        cout << "[9]  Darken or lighten image\n";
-        cout << "[10] Resize image\n";
-        cout << "[11] Merge image\n";
-        cout << "[12] Detect image edges\n";
-        cout << "[13] Crop image\n";
-        cout << "[14] Blur image\n";
-        cout << "[15] Make a good natural sunlight to image\n";
-        cout << "[16] Making image like it is in Den Den Mushi (Television)\n";
-        cout << "[17] Make image look purple\n";
-        cout << "[18] Make image infrared\n";
-        cout << "[19] Apply sepia filter\n";
-        cout << "[20] Sharpen image\n";
+        cout << "===========================================================\n";
+        cout << "=====================   Hallo Image   =====================\n";
+        cout << "===========================================================\n";
+        cout << "[1]  Grayscale conversion filter\n";
+        cout << "[2]  Black and white conversion filter\n";
+        cout << "[3]  Invert image\n";
+        cout << "[4]  Add a frame\n";
+        cout << "[5]  Flip image\n";
+        cout << "[6]  Rotate image\n";
+        cout << "[7]  Darken or lighten image\n";
+        cout << "[8]  Resize image\n";
+        cout << "[9]  Merge image\n";
+        cout << "[10] Detect image edges\n";
+        cout << "[11] Crop image\n";
+        cout << "[12] Blur image\n";
+        cout << "[13] Make a good natural sunlight to image\n";
+        cout << "[14] Making image like it is in Den Den Mushi (Television)\n";
+        cout << "[15] Make image look purple\n";
+        cout << "[16] Make image infrared\n";
+        cout << "[17] Apply sepia filter\n";
+        cout << "[18] Sharpen image\n";
+        cout << "[19] Load image\n";
+        cout << "[20] Save image\n";
         cout << "[21] Exit\n";
 
         execute_main_screen_option(read_main_screen_option());
@@ -954,7 +994,7 @@ private:
     static void go_back_to_main_screen()
     {
         cout << "Press anything to go back to the main screen.....";
-        system("pause>0");
+        system("pause > nul");
 
         execute_main_screen();
     }
