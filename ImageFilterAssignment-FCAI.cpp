@@ -404,8 +404,6 @@ public:
 private:
     static void execute_black_and_white_conversion()
     {
-        // cout << "execute_black_and_white_conversion will be here\n";
-
         execute_grayscale_conversion(); 
 
         for (int x = 0; x < cls_main_screen::currentImage.width; x++)
@@ -446,9 +444,9 @@ private:
         cout << "Filter applied successfully!\n\n";
     }
 
-    static void execute_adding_image()
+    static void execute_adding_frame()
     {
-        cout << "execute_adding_image will be here\n";
+        cout << "execute_adding_frame will be here\n";
     }
 
     static void execute_flipping_image()
@@ -787,7 +785,25 @@ private:
 
     static void execute_making_image_look_purple()
     {
-        cout << "execute_making_image_look_purple will be here\n";
+        for (int i = 0; i < currentImage.width; ++i)
+        {
+            for (int j = 0; j < currentImage.height; ++j)
+            {
+                int overflowCheckRed = static_cast<int>(currentImage(i, j, 0) * ((100 + 20) / 100.0));
+                if (overflowCheckRed > 255)
+                    currentImage(i, j, 0) = 255;
+                else
+                    currentImage(i, j, 0) = overflowCheckRed;
+
+                int overflowCheckBlue = static_cast<int>(currentImage(i, j, 2) * ((100 + 20) / 100.0));
+                if (overflowCheckBlue > 255)
+                    currentImage(i, j, 2) = 255;
+                else
+                    currentImage(i, j, 2) = overflowCheckBlue;
+
+                currentImage(i, j, 1) = static_cast<int>(currentImage(i, j, 1) * ((100 - 20) / 100.0));
+            }
+        }
     }
 
     static void execute_making_image_look_infrared()
@@ -855,7 +871,7 @@ private:
 
         case cls_main_screen::adding_image:
             system("cls");
-            execute_adding_image();
+            execute_adding_frame();
             go_back_to_main_screen();
             break;
 
