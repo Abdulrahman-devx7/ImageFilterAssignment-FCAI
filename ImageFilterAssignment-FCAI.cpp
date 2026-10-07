@@ -8,279 +8,6 @@
 
 using namespace std;
 
-class cls_rotating_image_screen
-{
-private:
-    enum en_rotaing_image_screen_option
-    {
-        with_90_degree = 1,
-        with_180_degree = 2,
-        with_270_degree = 3,
-        go_to_main_menu = 4
-    };
-
-    static void rotating_with_90_degree(Image &target)
-    {
-        Image image(target.height, target.width);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(y, target.width - 1 - x, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void rotating_with_180_degree(Image &target)
-    {
-        Image image(target.width, target.height);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(target.width - 1 - x, target.height - 1 - y, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void rotating_with_270_degree(Image &target)
-    {
-        Image image(target.height, target.width);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(target.height - 1 - y, x, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void execute_rotating_image_option(en_rotaing_image_screen_option option, Image &target)
-    {
-        switch (option)
-        {
-        case with_90_degree:
-            rotating_with_90_degree(target);
-            break;
-
-        case with_180_degree:
-            rotating_with_180_degree(target);
-            break;
-
-        case with_270_degree:
-            rotating_with_270_degree(target);
-            break;
-
-        case go_to_main_menu:
-            return;
-
-        default:
-            break;
-        }
-
-        cout << "Rotation done successfully\n";
-    }
-
-public:
-    static void execute_rotating_image(Image &target)
-    {
-        cout << "[1]  rotate by 90 degree.\n";
-        cout << "[2]  rotate by 180 degree.\n";
-        cout << "[3]  rotate by 270 degree.\n";
-        cout << "[4]  go to main menu\n";
-
-        short x;
-        cout << "please enter your choice[1, 2, 3]\n";
-        cin >> x;
-
-        execute_rotating_image_option(en_rotaing_image_screen_option(x), target);
-    }
-};
-
-class cls_darken_or_lighten_image_screen
-{
-private:
-    enum submenuChoice
-    {
-        darken_image = 1,
-        lighten_image = 2
-    };
-
-    static short readUserInput()
-    {
-        short choice = 0;
-        while (!(cin >> choice))
-        {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-
-        return choice;
-    }
-
-    static void execute_lighten_image(Image &target)
-    {
-        cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
-        short percentage = readUserInput();
-
-        for (int i = 0; i < target.width; ++i)
-        {
-            for (int j = 0; j < target.height; ++j)
-            {
-                for (int k = 0; k < 3; ++k)
-                {
-                    int overflowCheck = static_cast<int>(target(i, j, k) * ((100 + percentage) / 100.0));
-                    if (overflowCheck > 255)
-                        target(i, j, k) = 255;
-                    else
-                        target(i, j, k) = overflowCheck;
-                }
-            }
-        }
-    }
-
-    static void execute_darken_image(Image &target)
-    {
-        cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
-        short percentage = readUserInput();
-
-        for (int i = 0; i < target.width; ++i)
-        {
-            for (int j = 0; j < target.height; ++j)
-            {
-                for (int k = 0; k < 3; ++k)
-                {
-                    target(i, j, k) = static_cast<unsigned char>(target(i, j, k) * ((100 - percentage) / 100.0));
-                }
-            }
-        }
-    }
-
-    static void run_chosen_filter(const submenuChoice option, Image &target)
-    {
-        switch (option)
-        {
-        case submenuChoice::darken_image:
-
-            system("cls");
-            execute_darken_image(target);
-            break;
-
-        case submenuChoice::lighten_image:
-            system("cls");
-            execute_lighten_image(target);
-            break;
-        }
-        cout << "Filter applied successfully!\n\n";
-    }
-
-public:
-    static void run_filter(Image &target)
-    {
-        cout << "[1]  Darken Image\n";
-        cout << "[2]  Lighten Image\n";
-
-        run_chosen_filter(static_cast<submenuChoice>(readUserInput()), target);
-    }
-};
-
-class cls_execute_cropping_image
-{
-private:
-    static string read_file_name()
-    {
-        string filename;
-        getline(cin >> ws, filename);
-
-        return filename;
-    }
-
-    struct cropImageData
-    {
-        int startPointX = 0;
-        int startPointY = 0;
-
-        int dimensionHeight = 0;
-        int dimensionWidth = 0;
-    };
-
-    static cropImageData readImageCropData()
-    {
-        cropImageData data;
-
-        cout << "Please, input the X coordinate for the starting point for cropping\n";
-        cin >> data.startPointX;
-
-        cout << "\nPlease, input the Y coordinate for the starting point\n";
-        cin >> data.startPointY;
-
-        cout << "\nPlease, input the width dimension\n";
-        cin >> data.dimensionWidth;
-
-        cout << "\nPlease, input the height dimension\n";
-        cin >> data.dimensionHeight;
-
-        return data;
-    }
-
-    static Image applyFilter(const Image target)
-    {
-        cropImageData imageData = readImageCropData();
-
-        Image croppedImage(imageData.dimensionWidth, imageData.dimensionHeight);
-
-        for (int i = 0; i < imageData.dimensionWidth; ++i)
-        {
-            for (int j = 0; j < imageData.dimensionHeight; ++j)
-            {
-                for (int k = 0; k < 3; ++k)
-                {
-                    croppedImage(i, j, k) = target(imageData.startPointY + i, imageData.startPointX + j, k);
-                }
-            }
-        }
-        return croppedImage;
-    }
-
-    static void determineSaveDestination(Image &originalImage, Image &croppedImage, const string &imageFileName)
-    {
-        cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
-
-        char answer = 'n';
-        cin >> answer;
-
-        if (tolower(answer) == 'y')
-        {
-            cout << "\nPlease, enter the file name: ";
-
-            string fileName = read_file_name();
-            croppedImage.saveImage(fileName);
-        }
-        else
-            originalImage = croppedImage;
-    }
-
-public:
-    static void run_filter(Image &target, const string &imageFileName)
-    {
-        Image croppedImage = applyFilter(target);
-        cout << "Cropping applied successfully!\n\n";
-        determineSaveDestination(target, croppedImage, imageFileName);
-    }
-};
-
 class cls_main_screen
 {
 public:
@@ -496,12 +223,130 @@ private:
 
     static void execute_rotating_image()
     {
-        cls_rotating_image_screen::execute_rotating_image(currentImage);
+        cout << "[1]  rotate by 90 degree.\n";
+        cout << "[2]  rotate by 180 degree.\n";
+        cout << "[3]  rotate by 270 degree.\n";
+        cout << "[4]  go to main menu\n";
+
+        short choice;
+        cout << "please enter your choice[1, 2, 3]\n";
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            Image image(currentImage.height, currentImage.width);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(y, currentImage.width - 1 - x, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 2)
+        {
+            Image image(currentImage.width, currentImage.height);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(currentImage.width - 1 - x, currentImage.height - 1 - y, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 3)
+        {
+            Image image(currentImage.height, currentImage.width);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(currentImage.height - 1 - y, x, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 4)
+        {
+            return;
+        }
     }
 
     static void execute_darkening_or_lightening_conversion()
     {
-        cls_darken_or_lighten_image_screen::run_filter(currentImage);
+        cout << "[1]  Darken Image\n";
+        cout << "[2]  Lighten Image\n";
+
+        short choice = 0;
+        while (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        if (choice == 1)
+        {
+            system("cls");
+            cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
+            short percentage = 0;
+            while (!(cin >> percentage))
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        currentImage(i, j, k) = static_cast<unsigned char>(currentImage(i, j, k) * ((100 - percentage) / 100.0));
+                    }
+                }
+            }
+        }
+        else if (choice == 2)
+        {
+            system("cls");
+            cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
+            short percentage = 0;
+            while (!(cin >> percentage))
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        int overflowCheck = static_cast<int>(currentImage(i, j, k) * ((100 + percentage) / 100.0));
+                        if (overflowCheck > 255)
+                            currentImage(i, j, k) = 255;
+                        else
+                            currentImage(i, j, k) = overflowCheck;
+                    }
+                }
+            }
+        }
+        cout << "Filter applied successfully!\n\n";
     }
 
     static Image apply_resize(int newWidth, int newHeight)
@@ -651,13 +496,56 @@ private:
     static void execute_detecting_image()
     {
         cout << "The Edge Detection Filter will be here\n";
-
-        //cout << "\nEdge Detection Filter applied successfully.\n\n";
     }
 
     static void execute_cropping_image()
     {
-        cls_execute_cropping_image::run_filter(currentImage, currentImageName);
+        int startPointX = 0;
+        int startPointY = 0;
+        int dimensionHeight = 0;
+        int dimensionWidth = 0;
+
+        cout << "Please, input the X coordinate for the starting point for cropping\n";
+        cin >> startPointX;
+
+        cout << "\nPlease, input the Y coordinate for the starting point\n";
+        cin >> startPointY;
+
+        cout << "\nPlease, input the width dimension\n";
+        cin >> dimensionWidth;
+
+        cout << "\nPlease, input the height dimension\n";
+        cin >> dimensionHeight;
+
+        Image croppedImage(dimensionWidth, dimensionHeight);
+
+        for (int i = 0; i < dimensionWidth; ++i)
+        {
+            for (int j = 0; j < dimensionHeight; ++j)
+            {
+                for (int k = 0; k < 3; ++k)
+                {
+                    croppedImage(i, j, k) = currentImage(startPointY + i, startPointX + j, k);
+                }
+            }
+        }
+
+        cout << "Cropping applied successfully!\n\n";
+
+        cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
+
+        char answer = 'n';
+        cin >> answer;
+
+        if (tolower(answer) == 'y')
+        {
+            cout << "\nPlease, enter the file name: ";
+            string fileName;
+            getline(cin >> ws, fileName);
+            croppedImage.saveImage(fileName);
+        }
+        else
+            currentImage = croppedImage;
     }
 
     // Simple Separable Blur
