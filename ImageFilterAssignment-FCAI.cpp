@@ -8,93 +8,6 @@
 
 using namespace std;
 
-class cls_darken_or_lighten_image_screen
-{
-private:
-    enum submenuChoice
-    {
-        darken_image = 1,
-        lighten_image = 2
-    };
-
-    static short readUserInput()
-    {
-        short choice = 0;
-        while (!(cin >> choice))
-        {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-
-        return choice;
-    }
-
-    static void execute_lighten_image(Image &target)
-    {
-        cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
-        short percentage = readUserInput();
-
-        for (int i = 0; i < target.width; ++i)
-        {
-            for (int j = 0; j < target.height; ++j)
-            {
-                for (int k = 0; k < 3; ++k)
-                {
-                    int overflowCheck = static_cast<int>(target(i, j, k) * ((100 + percentage) / 100.0));
-                    if (overflowCheck > 255)
-                        target(i, j, k) = 255;
-                    else
-                        target(i, j, k) = overflowCheck;
-                }
-            }
-        }
-    }
-
-    static void execute_darken_image(Image &target)
-    {
-        cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
-        short percentage = readUserInput();
-
-        for (int i = 0; i < target.width; ++i)
-        {
-            for (int j = 0; j < target.height; ++j)
-            {
-                for (int k = 0; k < 3; ++k)
-                {
-                    target(i, j, k) = static_cast<unsigned char>(target(i, j, k) * ((100 - percentage) / 100.0));
-                }
-            }
-        }
-    }
-
-    static void run_chosen_filter(const submenuChoice option, Image &target)
-    {
-        switch (option)
-        {
-        case submenuChoice::darken_image:
-
-            system("cls");
-            execute_darken_image(target);
-            break;
-
-        case submenuChoice::lighten_image:
-            system("cls");
-            execute_lighten_image(target);
-            break;
-        }
-        cout << "Filter applied successfully!\n\n";
-    }
-
-public:
-    static void run_filter(Image &target)
-    {
-        cout << "[1]  Darken Image\n";
-        cout << "[2]  Lighten Image\n";
-
-        run_chosen_filter(static_cast<submenuChoice>(readUserInput()), target);
-    }
-};
-
 class cls_execute_cropping_image
 {
 private:
@@ -456,7 +369,65 @@ private:
 
     static void execute_darkening_or_lightening_conversion()
     {
-        cls_darken_or_lighten_image_screen::run_filter(currentImage);
+        cout << "[1]  Darken Image\n";
+        cout << "[2]  Lighten Image\n";
+
+        short choice = 0;
+        while (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+
+        if (choice == 1)
+        {
+            system("cls");
+            cout << "\n\nPlease, determine the percentage of darkening(0-100%): ";
+            short percentage = 0;
+            while (!(cin >> percentage))
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        currentImage(i, j, k) = static_cast<unsigned char>(currentImage(i, j, k) * ((100 - percentage) / 100.0));
+                    }
+                }
+            }
+        }
+        else if (choice == 2)
+        {
+            system("cls");
+            cout << "\n\nPlease, determine the percentage of lightening(0-100%): ";
+            short percentage = 0;
+            while (!(cin >> percentage))
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            }
+
+            for (int i = 0; i < currentImage.width; ++i)
+            {
+                for (int j = 0; j < currentImage.height; ++j)
+                {
+                    for (int k = 0; k < 3; ++k)
+                    {
+                        int overflowCheck = static_cast<int>(currentImage(i, j, k) * ((100 + percentage) / 100.0));
+                        if (overflowCheck > 255)
+                            currentImage(i, j, k) = 255;
+                        else
+                            currentImage(i, j, k) = overflowCheck;
+                    }
+                }
+            }
+        }
+        cout << "Filter applied successfully!\n\n";
     }
 
     static Image apply_resize(int newWidth, int newHeight)
