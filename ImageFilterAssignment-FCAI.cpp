@@ -8,107 +8,6 @@
 
 using namespace std;
 
-class cls_rotating_image_screen
-{
-private:
-    enum en_rotaing_image_screen_option
-    {
-        with_90_degree = 1,
-        with_180_degree = 2,
-        with_270_degree = 3,
-        go_to_main_menu = 4
-    };
-
-    static void rotating_with_90_degree(Image &target)
-    {
-        Image image(target.height, target.width);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(y, target.width - 1 - x, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void rotating_with_180_degree(Image &target)
-    {
-        Image image(target.width, target.height);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(target.width - 1 - x, target.height - 1 - y, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void rotating_with_270_degree(Image &target)
-    {
-        Image image(target.height, target.width);
-        for (int x = 0; x < target.width; x++)
-        {
-            for (int y = 0; y < target.height; y++)
-            {
-                for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                {
-                    image.setPixel(target.height - 1 - y, x, rgb_color, target.getPixel(x, y, rgb_color));
-                }
-            }
-        }
-        target = image;
-    }
-
-    static void execute_rotating_image_option(en_rotaing_image_screen_option option, Image &target)
-    {
-        switch (option)
-        {
-        case with_90_degree:
-            rotating_with_90_degree(target);
-            break;
-
-        case with_180_degree:
-            rotating_with_180_degree(target);
-            break;
-
-        case with_270_degree:
-            rotating_with_270_degree(target);
-            break;
-
-        case go_to_main_menu:
-            return;
-
-        default:
-            break;
-        }
-
-        cout << "Rotation done successfully\n";
-    }
-
-public:
-    static void execute_rotating_image(Image &target)
-    {
-        cout << "[1]  rotate by 90 degree.\n";
-        cout << "[2]  rotate by 180 degree.\n";
-        cout << "[3]  rotate by 270 degree.\n";
-        cout << "[4]  go to main menu\n";
-
-        short x;
-        cout << "please enter your choice[1, 2, 3]\n";
-        cin >> x;
-
-        execute_rotating_image_option(en_rotaing_image_screen_option(x), target);
-    }
-};
-
 class cls_darken_or_lighten_image_screen
 {
 private:
@@ -492,7 +391,67 @@ private:
 
     static void execute_rotating_image()
     {
-        cls_rotating_image_screen::execute_rotating_image(currentImage);
+        cout << "[1]  rotate by 90 degree.\n";
+        cout << "[2]  rotate by 180 degree.\n";
+        cout << "[3]  rotate by 270 degree.\n";
+        cout << "[4]  go to main menu\n";
+
+        short choice;
+        cout << "please enter your choice[1, 2, 3]\n";
+        cin >> choice;
+
+        if (choice == 1)
+        {
+            Image image(currentImage.height, currentImage.width);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(y, currentImage.width - 1 - x, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 2)
+        {
+            Image image(currentImage.width, currentImage.height);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(currentImage.width - 1 - x, currentImage.height - 1 - y, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 3)
+        {
+            Image image(currentImage.height, currentImage.width);
+            for (int x = 0; x < currentImage.width; x++)
+            {
+                for (int y = 0; y < currentImage.height; y++)
+                {
+                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
+                    {
+                        image.setPixel(currentImage.height - 1 - y, x, rgb_color, currentImage.getPixel(x, y, rgb_color));
+                    }
+                }
+            }
+            currentImage = image;
+            cout << "Rotation done successfully\n";
+        }
+        else if (choice == 4)
+        {
+            return;
+        }
     }
 
     static void execute_darkening_or_lightening_conversion()
