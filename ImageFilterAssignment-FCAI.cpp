@@ -2,6 +2,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string>
+#include <vector>
+#include <omp.h>
 #include <algorithm>
 #include <cmath>
 #include "Image_Class.h"
@@ -13,6 +15,7 @@ class cls_main_screen
 public:
     static Image currentImage;      // it must be public because other filters are in different classes
     static string currentImageName; // it must be public because other filters are in different classes
+
 private:
     enum en_main_screen_option
     {
@@ -33,7 +36,7 @@ private:
         making_image_look_purple,
         making_image_look_infrared,
         apply_sepia_filter,
-        sharpen_image,
+        oil_paint_image,
         load_image,
         save_image,
         exit
@@ -51,14 +54,14 @@ private:
     static en_main_screen_option read_main_screen_option()
     {
         int x;
-
+        cout << "\nPlease enter an integer number between 1 and 21: ";
         while (!(cin >> x) || x < 1 || 21 < x)
         {
             cout << "Invalid input, please enter an integer number between 1 and 21: ";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-        
+
         return en_main_screen_option(x);
     }
 
@@ -104,7 +107,6 @@ private:
         currentImage.loadNewImage(currentImageName);
     }
 
-public:
     static void execute_grayscale_conversion()
     {
         for (int i = 0; i < currentImage.width; ++i)
@@ -128,10 +130,9 @@ public:
         cout << "Grayscale applied successfully!\n";
     }
 
-private:
     static void execute_black_and_white_conversion()
     {
-        execute_grayscale_conversion(); 
+        execute_grayscale_conversion();
 
         for (int x = 0; x < cls_main_screen::currentImage.width; x++)
         {
@@ -173,7 +174,62 @@ private:
 
     static void execute_adding_frame()
     {
-        cout << "execute_adding_frame will be here\n";
+        int width = currentImage.width;
+        int height = currentImage.height;
+
+        cout << "Choose Frame Type:\n";
+        cout << "[1] Simple Frame\n";
+        cout << "[2] Decorated Frame\n";
+        cout << "Choice: ";
+        int choose;
+        cin >> choose;
+
+        int radian = 20;
+        int frameSize = min(width, height) / radian;
+        int smallFrameSize = max(1, frameSize / 3);
+
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                if (height - frameSize <= h || h < frameSize || width - frameSize <= w || w < frameSize)
+                {
+                    currentImage(w, h, 0) = 30;
+                    currentImage(w, h, 1) = 30;
+                    currentImage(w, h, 2) = 30;
+                }
+                else if (h < frameSize + smallFrameSize || w < frameSize + smallFrameSize || height - frameSize - smallFrameSize <= h || width - frameSize - smallFrameSize <= w)
+                {
+                    currentImage(w, h, 0) = 212;
+                    currentImage(w, h, 1) = 175;
+                    currentImage(w, h, 2) = 55;
+                }
+            }
+        }
+        if (choose == 2)
+        {
+            cout << "Adding decorations...\n";
+
+            int cornerSize = frameSize * 3;
+
+            for (int h = 0; h < height; h++)
+            {
+                for (int w = 0; w < width; w++)
+                {
+                    bool isTopLeft = (h < cornerSize && w < cornerSize);
+                    bool isTopRight = (h < cornerSize && w >= width - cornerSize);
+                    bool isBottomLeft = (h >= height - cornerSize && w < cornerSize);
+                    bool isBottomRight = (h >= height - cornerSize && w >= width - cornerSize);
+
+                    if (isTopLeft || isTopRight || isBottomLeft || isBottomRight)
+                    {
+                        currentImage(w, h, 0) = 92;
+                        currentImage(w, h, 1) = 64;
+                        currentImage(w, h, 2) = 51;
+                    }
+                }
+            }
+        }
     }
 
     static void execute_flipping_image()
@@ -548,7 +604,6 @@ private:
             currentImage = croppedImage;
     }
 
-    // Simple Separable Blur
     static void execute_blurring_image()
     {
         cout << "\nChoose Blur Level:\n";
@@ -568,16 +623,17 @@ private:
         /**
          * Separable box blur:
          * a standard 2d Box blur applies a (2R+1)^2 operations per pixel
-         * 
+         *
          * here we used Matrix factorization:
          * | 1 1 1 |          | 1 |
          * | 1 1 1 |  = 1/9 * | 1 | * | 1 1 1 |
-         * | 1 1 1 |          | 1 | 
-         * 
+         * | 1 1 1 |          | 1 |
+         *
          * by applying the horizontal 1D pass first and then the vertical 1D pass.
          */
         Image tempImage(currentImage.width, currentImage.height);
-        // pass 1 : horizontal blur
+// pass 1 : horizontal blur
+#pragma omp parallel for collapse(2)
         for (int h = 0; h < currentImage.height; h++)
         {
             for (int w = 0; w < currentImage.width; w++)
@@ -597,8 +653,9 @@ private:
                 }
             }
         }
-        
-        // pass 2 : vertical blur
+
+// pass 2 : vertical blur
+#pragma omp parallel for collapse(2)
         for (int w = 0; w < currentImage.width; w++)
         {
             for (int h = 0; h < currentImage.height; h++)
@@ -618,10 +675,6 @@ private:
                 }
             }
         }
-        // string newName = "out1.jpg";
-        // currentImage.saveImage(newName);
-        // string openCommand = "start \"\" \"" + newName + "\"";
-        // system(openCommand.c_str());
         cout << "\nBlur filter applied successfully.\n\n";
     }
 
@@ -712,19 +765,96 @@ private:
         cout << "execute_apply_sepia_filter will be here\n";
     }
 
-    static void execute_sharpen_image()
+    static void execute_oil_paint_image()
     {
-        cout << "execute_sharpen_image will be here\n";
+        cout << "\nPlease wait...\n";
+        int radius = 5;
+        int levels = 20;
+        int width = currentImage.width;
+        int height = currentImage.height;
+
+        Image tempImage = currentImage;
+        Image outputImage = currentImage;
+        /**
+         * Quantize pixel intensities into 20 level
+         * Determine the dominant intensity level within a local radius for each pixel
+         * Calculate the average RGB values of the dominant level
+         */
+        vector<int> intensityMap(width * height);
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                int r = tempImage(w, h, 0);
+                int g = tempImage(w, h, 1);
+                int b = tempImage(w, h, 2);
+                int intensity = (r + g + b) / 3;
+                int level = (intensity * levels) / 256;
+                if (level >= levels)
+                    level = levels - 1;
+                intensityMap[h * width + w] = level;
+            }
+        }
+
+#pragma omp parallel for collapse(2)
+        for (int h = 0; h < height; h++)
+        {
+            for (int w = 0; w < width; w++)
+            {
+                int intensityCount[levels] = {};
+                int sumR[levels] = {};
+                int sumG[levels] = {};
+                int sumB[levels] = {};
+
+                int minH = max(0, h - radius);
+                int maxH = min(height - 1, h + radius);
+                int minW = max(0, w - radius);
+                int maxW = min(width - 1, w + radius);
+
+                for (int nh = minH; nh <= maxH; nh++)
+                {
+                    for (int nw = minW; nw <= maxW; nw++)
+                    {
+                        int level = intensityMap[nh * width + nw];
+
+                        intensityCount[level]++;
+                        sumR[level] += tempImage(nw, nh, 0);
+                        sumG[level] += tempImage(nw, nh, 1);
+                        sumB[level] += tempImage(nw, nh, 2);
+                    }
+                }
+
+                int maxCount = 0;
+                int maxIndex = 0;
+                for (int i = 0; i < levels; i++)
+                {
+                    if (intensityCount[i] > maxCount)
+                    {
+                        maxCount = intensityCount[i];
+                        maxIndex = i;
+                    }
+                }
+
+                if (maxCount > 0)
+                {
+                    outputImage(w, h, 0) = sumR[maxIndex] / maxCount;
+                    outputImage(w, h, 1) = sumG[maxIndex] / maxCount;
+                    outputImage(w, h, 2) = sumB[maxIndex] / maxCount;
+                }
+            }
+        }
+        currentImage = outputImage;
     }
 
     static void execute_exit()
     {
+        system("cls");
         execute_save_image();
     }
 
     static void execute_main_screen_option(en_main_screen_option option)
     {
-        system("cls");
+        // system("cls");
         switch (option)
         {
         case cls_main_screen::load_image:
@@ -782,7 +912,7 @@ private:
             break;
 
         case cls_main_screen::resizing_image:
-            // system("cls");
+            system("cls");
             execute_resizing_image();
             go_back_to_main_screen();
             break;
@@ -806,7 +936,7 @@ private:
             break;
 
         case cls_main_screen::blurring_image:
-            // system("cls");
+            system("cls");
             execute_blurring_image();
             go_back_to_main_screen();
             break;
@@ -841,9 +971,9 @@ private:
             go_back_to_main_screen();
             break;
 
-        case cls_main_screen::sharpen_image:
+        case cls_main_screen::oil_paint_image:
             system("cls");
-            execute_sharpen_image();
+            execute_oil_paint_image();
             go_back_to_main_screen();
             break;
 
@@ -879,7 +1009,7 @@ private:
         cout << "[15] Make image look purple\n";
         cout << "[16] Make image infrared\n";
         cout << "[17] Apply sepia filter\n";
-        cout << "[18] Sharpen image\n";
+        cout << "[18] Oil Paint image\n";
         cout << "[19] Load image\n";
         cout << "[20] Save image\n";
         cout << "[21] Exit\n";
@@ -887,19 +1017,18 @@ private:
         execute_main_screen_option(read_main_screen_option());
     }
 
-public:
-    static void Run()
-    {
-        execute_load_image_bootup();
-        execute_main_screen();
-    }
-
-private:
     static void go_back_to_main_screen()
     {
         cout << "Press anything to go back to the main screen.....";
         system("pause > nul");
 
+        execute_main_screen();
+    }
+
+public:
+    static void Run()
+    {
+        execute_load_image_bootup();
         execute_main_screen();
     }
 };
