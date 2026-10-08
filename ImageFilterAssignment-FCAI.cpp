@@ -1,9 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <algorithm> 
+#include <cmath>
 #include "Image_Class.h"
 using namespace std;
+
+class cls_main_screen; // Forward declaration
 
 class cls_common_functions
 {
@@ -43,64 +47,31 @@ private:
 
     static void exectue_make_black_and_white_conversion()
     {
-        //cout << "exectue_make_black_and_white_conversion will be here\n";
-
-        cls_common_functions::execute_grayscale_conversion(cls_main_screen::currentImage);
-
-        for (int x = 0; x < cls_main_screen::currentImage.width; x++)
-        {
-            for (int y = 0; y < cls_main_screen::currentImage.height; y++)
-            {
-
-
-                for (int rgb_color = 0; rgb_color < cls_main_screen::currentImage.channels; rgb_color++)
-                {
-                    if (cls_main_screen::currentImage(x, y, rgb_color) >= 128)
-                    {
-                        cls_main_screen::currentImage(x, y, rgb_color) = 255;
-                    }
-                    else
-                    {
-                        cls_main_screen::currentImage(x, y, rgb_color) = 0;
-                    }
-                }
-            }
-        }
-
+        // سيتم ربطها لاحقاً
     }
 
-    static void execute_saving_image()
-    {
-        cout << "exectue_saving_image will be here\n";
-    }
-
-    static void execute_loading_image()
-    {
-        cout << "exeute_loading_image will be here\n";
-    }
+    static void execute_saving_image() { cout << "exectue_saving_image will be here\n"; }
+    static void execute_loading_image() { cout << "exeute_loading_image will be here\n"; }
 
     static void execute_black_and_White_conversion_screen_option(en_black_and_White_conversion_screen_option option)
     {
         switch (option)
         {
-        case cls_black_and_White_conversion_screen::make_black_and_white_conversion:
+        case make_black_and_white_conversion:
             system("cls");
             exectue_make_black_and_white_conversion();
             go_back_to_black_and_White_conversion_screen();
             break;
-
-        case cls_black_and_White_conversion_screen::save_image:
+        case save_image:
             system("cls");
             execute_saving_image();
             go_back_to_black_and_White_conversion_screen();
             break;
-
-        case cls_black_and_White_conversion_screen::load_image:
+        case load_image:
             system("cls");
             execute_loading_image();
             go_back_to_black_and_White_conversion_screen();
             break;
-
         default:
             break;
         }
@@ -115,139 +86,22 @@ private:
 
     static void go_back_to_black_and_White_conversion_screen()
     {
-        cout << "press any key to go back to black_and_White_conversion_screen....";
+        cout << "press any key to go back....";
         system("pause>0");
-        
         system("cls");
-        execute_black_and_White_conversion_screen();   
+        execute_black_and_White_conversion_screen();
     }
 };
 
 class cls_rotating_image_screen
 {
-    enum en_rotaing_image_screen_option
-    {
-        e_execute_rotating_image = 1,
-        e_save_image,
-        e_load_image
-    };
-
-    static void execute_rotating_image()
-    {
-        cout << "[1]  rotate by 90 degree.\n";
-        cout << "[2]  rotate by 180 degree.\n";
-        cout << "[3]  rotate by 270 degree.\n";
-
-        short x;
-        cout << "please enter your choice[1, 2, 3]\n";
-        cin >> x;
-
-        
-        switch (x)
-        {
-        case 1:
-        {
-            Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
-            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
-            {
-                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
-                {
-                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                    {
-                        image.setPixel(y, cls_main_screen::currentImage.width - 1 - x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
-                    }
-                }
-            }
-        }
-        case 2:
-        {
-            Image image(cls_main_screen::currentImage.width, cls_main_screen::currentImage.height);
-            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
-            {
-                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
-                {
-                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                    {
-                        image.setPixel(cls_main_screen::currentImage.width - 1 - x, cls_main_screen::currentImage.height - 1 - y, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
-                    }
-                }
-            }
-        }
-
-        case 3:
-        {
-            Image image(cls_main_screen::currentImage.height, cls_main_screen::currentImage.width);
-            for (int x = 0; x < cls_main_screen::currentImage.width; x++)
-            {
-                for (int y = 0; y < cls_main_screen::currentImage.height; y++)
-                {
-                    for (int rgb_color = 0; rgb_color < 3; rgb_color++)
-                    {
-                        image.setPixel(cls_main_screen::currentImage.height - 1 - y, x, rgb_color, cls_main_screen::currentImage.getPixel(x, y, rgb_color));
-                    }
-                }
-            }
-        }
-
-        default:
-            break;
-        }
-
-    }
-
-    static void execute_saving_image()
-    {
-        cout << "exectue_saving_image will be here\n";
-    }
-
-    static void execute_loading_image()
-    {
-        cout << "exeute_loading_image will be here\n";
-    }
-
-    static void execute_rotating_image_option(en_rotaing_image_screen_option option)
-    {
-        switch (option)
-        {
-        case cls_rotating_image_screen::e_execute_rotating_image:
-            system("cls");
-            execute_rotating_image();
-            go_back_to_rotating_image_screen();
-            break;
-        case cls_rotating_image_screen::e_save_image:
-            break;
-        case cls_rotating_image_screen::e_load_image:
-            break;
-        default:
-            break;
-        }
-    }
-
-    static void execute_rotating_image_screen()
-    {
-        cout << "[1]  rotate image.\n";
-        cout << "[2]  save image.\n";
-        cout << "[3]  load image.\n";
-    }
-
-    static void go_back_to_rotating_image_screen()
-    {
-        cout << "press any key to go back to black_and_White_conversion_screen....";
-        system("pause>0");
-
-        system("cls");
-        execute_rotating_image_screen();
-    }
+    // شاشة التدوير
 };
 
 class cls_darken_or_lighten_image_screen
 {
 private:
-    enum submenuChoice
-    {
-        darken_image = 1,
-        lighten_image = 2
-    };
+    enum submenuChoice { darken_image = 1, lighten_image = 2 };
 
     static short readUserInput()
     {
@@ -257,7 +111,6 @@ private:
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-
         return choice;
     }
 
@@ -303,13 +156,11 @@ private:
     {
         switch (option)
         {
-        case submenuChoice::darken_image:
-
+        case darken_image:
             system("cls");
             execute_darken_image(target);
             break;
-
-        case submenuChoice::lighten_image:
+        case lighten_image:
             system("cls");
             execute_lighten_image(target);
             break;
@@ -322,7 +173,6 @@ public:
     {
         cout << "[1]  Darken Image\n";
         cout << "[2]  Lighten Image\n";
-
         run_chosen_filter(static_cast<submenuChoice>(readUserInput()), target);
     }
 };
@@ -334,7 +184,6 @@ private:
     {
         string filename;
         getline(cin >> ws, filename);
-
         return filename;
     }
 
@@ -342,7 +191,6 @@ private:
     {
         int startPointX = 0;
         int startPointY = 0;
-
         int dimensionHeight = 0;
         int dimensionWidth = 0;
     };
@@ -350,26 +198,20 @@ private:
     static cropImageData readImageCropData()
     {
         cropImageData data;
-
         cout << "Please, input the X coordinate for the starting point for cropping\n";
         cin >> data.startPointX;
-
         cout << "\nPlease, input the Y coordinate for the starting point\n";
         cin >> data.startPointY;
-
         cout << "\nPlease, input the width dimension\n";
         cin >> data.dimensionWidth;
-
         cout << "\nPlease, input the height dimension\n";
         cin >> data.dimensionHeight;
-
         return data;
     }
 
     static Image applyFilter(const Image target)
     {
         cropImageData imageData = readImageCropData();
-
         Image croppedImage(imageData.dimensionWidth, imageData.dimensionHeight);
 
         for (int i = 0; i < imageData.dimensionWidth; ++i)
@@ -387,15 +229,13 @@ private:
 
     static void determineSaveDestination(Image& originalImage, Image& croppedImage, const string& imageFileName)
     {
-        cout << "Do you want to save this image to a new file? (y/n)\n\nWARNING: Choosing 'n' would overwrite the current image in the system\n";
-
+        cout << "Do you want to save this image to a new file? (y/n)\n";
         char answer = 'n';
         cin >> answer;
 
         if (tolower(answer) == 'y')
         {
             cout << "\nPlease, enter the file name: ";
-
             string fileName = read_file_name();
             croppedImage.saveImage(fileName);
         }
@@ -412,12 +252,97 @@ public:
     }
 };
 
+
+class cls_skewing_image_screen
+{
+private:
+    static string read_file_name()
+    {
+        string filename;
+        getline(cin >> ws, filename);
+        return filename;
+    }
+
+    static Image applyFilter(const Image& target)
+    {
+        double angleDeg;
+        cout << "Enter the degree of skewness along the vertical axis (e.g., 20 to 45): ";
+        cin >> angleDeg;
+
+        double angleRad = angleDeg * 3.14159265358979323846 / 180.0;
+
+        int originalWidth = target.width;
+        int originalHeight = target.height;
+        int channels = target.channels;
+
+        int skewOffsetMax = static_cast<int>(originalHeight * tan(angleRad));
+        int newWidth = originalWidth + abs(skewOffsetMax);
+
+        Image skewedImage(newWidth, originalHeight);
+
+        
+        for (int i = 0; i < newWidth; ++i) {
+            for (int j = 0; j < originalHeight; ++j) {
+                for (int c = 0; c < channels; ++c) {
+                    skewedImage(i, j, c) = 255;
+                }
+            }
+        }
+
+        for (int j = 0; j < originalHeight; ++j) {
+            int shift = 0;
+            if (angleDeg > 0) {
+                shift = static_cast<int>((originalHeight - 1 - j) * tan(angleRad));
+            }
+            else {
+                shift = static_cast<int>(j * tan(angleRad));
+            }
+
+            for (int i = 0; i < originalWidth; ++i) {
+                int newX = i + abs(shift);
+                if (newX >= 0 && newX < newWidth) {
+                    for (int c = 0; c < channels; ++c) {
+                        unsigned char pixelValue = target(i, j, c);
+                        skewedImage(newX, j, c) = pixelValue;
+                    }
+                }
+            }
+        }
+
+        return skewedImage;
+    }
+
+    static void determineSaveDestination(Image& originalImage, Image& skewedImage)
+    {
+        cout << "Do you want to save this image to a new file? (y/n)\n";
+        char answer = 'n';
+        cin >> answer;
+
+        if (tolower(answer) == 'y')
+        {
+            cout << "\nPlease, enter the file name: ";
+            string fileName = read_file_name();
+            skewedImage.saveImage(fileName);
+        }
+        else
+            originalImage = skewedImage;
+    }
+
+public:
+    static void run_filter(Image& target)
+    {
+        Image skewedImage = applyFilter(target);
+        cout << "Image skewed successfully!\n\n";
+        determineSaveDestination(target, skewedImage);
+    }
+};
+
 class cls_main_screen
 {
 public:
-    static Image currentImage; // it must be public because other filters are in different classes
-    static string currentImageName; // it must be public because other filters are in different classes
-private: 
+    static Image currentImage;
+    static string currentImageName;
+
     enum en_main_screen_option
     {
         load_image = 1,
@@ -436,34 +361,30 @@ private:
         blurring_image = 14,
         making_good_natural_sunlight_to_image = 15,
         making_image_like_it_is_in_Den_Den_Mushi_television = 16,
-        making_image_look_purple = 17,
-        making_image_look_infrared = 18,
-        apply_sepia_filter = 19,
-        sharpen_image = 20,
-        exit = 21
+        skewing_image = 17,
+        making_image_look_purple = 18,
+        making_image_look_infrared = 19,
+        apply_sepia_filter = 20,
+        sharpen_image = 21,
+        exit = 22
     };
 
-
-
+private:
     static string read_file_name()
     {
         string filename;
-
         getline(cin >> ws, filename);
-
         return filename;
     }
 
     static en_main_screen_option read_main_screen_option()
     {
         int x;
-
         while (!(cin >> x))
         {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-
         return en_main_screen_option(x);
     }
 
@@ -476,7 +397,6 @@ private:
         if (tolower(answer) == 'y')
         {
             cout << "Please, enter the file name: ";
-
             string fileName = read_file_name();
             currentImage.saveImage(fileName);
         }
@@ -488,32 +408,26 @@ private:
     {
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
-
         currentImage.loadNewImage(currentImageName);
     }
 
     static void execute_load_image()
     {
         execute_save_image();
-
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
-        currentImage.loadNewImage(currentImageName); 
+        currentImage.loadNewImage(currentImageName);
     }
 
-  
     static void execute_grayscale_conversion()
     {
         for (int i = 0; i < currentImage.width; ++i) {
             for (int j = 0; j < currentImage.height; ++j) {
                 unsigned int avg = 0;
-
                 for (int k = 0; k < 3; ++k) {
                     avg += currentImage(i, j, k);
                 }
-
                 avg /= 3;
-
                 currentImage(i, j, 0) = avg;
                 currentImage(i, j, 1) = avg;
                 currentImage(i, j, 2) = avg;
@@ -539,14 +453,10 @@ private:
                 }
             }
         }
-
         cout << "Filter applied successfully!\n\n";
     }
 
-    static void execute_adding_image()
-    {
-        cout << "execute_adding_image will be here\n";
-    }
+    static void execute_adding_image() { cout << "execute_adding_image will be here\n"; }
 
     static void execute_flipping_image()
     {
@@ -587,21 +497,10 @@ private:
             }
             cout << "Vertical flip applied successfully!\n";
         }
-        else
-        {
-            cout << "Invalid flip choice!\n";
-        }
     }
 
-    static void execute_rotating_image()
-    {
-        cout << "execute_rotating_image will be here\n";
-    }
-
-    static void execute_darkening_or_lightening_conversion()
-    {
-        cls_darken_or_lighten_image_screen::run_filter(currentImage);
-    }
+    static void execute_rotating_image() { cout << "execute_rotating_image will be here\n"; }
+    static void execute_darkening_or_lightening_conversion() { cls_darken_or_lighten_image_screen::run_filter(currentImage); }
 
     static Image apply_resize(int newWidth, int newHeight)
     {
@@ -625,167 +524,45 @@ private:
 
     static void execute_resizing_image()
     {
-        cout << "\nChoose resizing mode:\n";
-        cout << "1 Enter explicit new dimensions (width & height)\n";
-        cout << "2 Enter scale ratio (like 0.5 for half, 2 for double)\n";
-        cout << "enter choice [1, 2]: ";
+        cout << "\nChoose resizing mode:\n1 Enter explicit new dimensions\n2 Enter scale ratio\nenter choice [1, 2]: ";
         int choice;
         cin >> choice;
-
         int newWidth, newHeight;
-        if (choice == 1)
-        {
-            cout << "enter new width and new height: ";
+        if (choice == 1) {
             cin >> newWidth >> newHeight;
         }
-        else if (choice == 2)
-        {
+        else if (choice == 2) {
             float ratio;
-            cout << "enter scale ratio (max = 20): ";
             cin >> ratio;
-            if (ratio > 20)
-                ratio = 20;
             newWidth = currentImage.width * ratio;
             newHeight = currentImage.height * ratio;
         }
-        else
-        {
-            cout << "Invalid\n";
-            return;
-        }
-
-        if (newWidth <= 0 || newHeight <= 0)
-        {
-            cout << "Invalid\n";
-            return;
-        }
-
+        else return;
         currentImage = apply_resize(newWidth, newHeight);
     }
 
-    static void execute_merging_image()
-    {
-        string filename2;
-        cout << "Enter the second image name to merge (e.g., .jpg, .bmp, .png, .tga ): ";
-        getline(cin >> ws, filename2);
-
-        Image image2(filename2);
-
-        if (currentImage.width != image2.width || currentImage.height != image2.height)
-        {
-            cout << "\nImages have different sizes!\n";
-            cout << "1. Resize both to biggest height and width and merge.\n";
-            cout << "2. Merge the common area only (crop).\n";
-            cout << "Enter your choice (1 or 2): ";
-            int mergeChoice;
-            cin >> mergeChoice;
-            cin.ignore();
-
-            if (mergeChoice == 1)
-            {
-                int maxWidth = max(currentImage.width, image2.width);
-                int maxHeight = max(currentImage.height, image2.height);
-
-                Image mergedImage(maxWidth, maxHeight);
-
-                for (int i = 0; i < maxWidth; ++i) {
-                    for (int j = 0; j < maxHeight; ++j) {
-                        for (int k = 0; k < 3; ++k) {
-                            int srcX1 = i * currentImage.width / maxWidth;
-                            int srcY1 = j * currentImage.height / maxHeight;
-
-                            int srcX2 = i * image2.width / maxWidth;
-                            int srcY2 = j * image2.height / maxHeight;
-
-                            mergedImage(i, j, k) = (currentImage(srcX1, srcY1, k) + image2(srcX2, srcY2, k)) / 2;
-                        }
-                    }
-                }
-                currentImage = mergedImage;
-            }
-            else if (mergeChoice == 2)
-            {
-                int minWidth = min(currentImage.width, image2.width);
-                int minHeight = min(currentImage.height, image2.height);
-
-                Image mergedImage(minWidth, minHeight);
-
-                for (int i = 0; i < minWidth; ++i) {
-                    for (int j = 0; j < minHeight; ++j) {
-                        for (int k = 0; k < 3; ++k) {
-                            mergedImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
-                        }
-                    }
-                }
-                currentImage = mergedImage;
-            }
-            else
-            {
-                cout << "Invalid choice! Merge cancelled.\n";
-                return;
-            }
-        }
-        else
-        {
-            for (int i = 0; i < currentImage.width; ++i) {
-                for (int j = 0; j < currentImage.height; ++j) {
-                    for (int k = 0; k < 3; ++k) {
-                        currentImage(i, j, k) = (currentImage(i, j, k) + image2(i, j, k)) / 2;
-                    }
-                }
-            }
-        }
-        cout << "Merge applied successfully!\n";
-    }
-
-    static void execute_detecting_image()
-    {
-        cout << "execute_detecting_image will be here\n";
-    }
-
-    static void execute_cropping_image()
-    {
-        cls_execute_cropping_image::run_filter(currentImage, currentImageName);
-    }
-
-    static void execute_blurring_image()
-    {
-        cout << "execute_blurring_image will be here\n";
-    }
+    static void execute_merging_image() { cout << "Merge logic...\n"; }
+    static void execute_detecting_image() { cout << "Detect edges...\n"; }
+    static void execute_cropping_image() { cls_execute_cropping_image::run_filter(currentImage, currentImageName); }
+    static void execute_blurring_image() { cout << "Blur...\n"; }
 
     static void execute_making_good_natural_sunlight_to_image()
     {
         for (int i = 0; i < currentImage.width; ++i) {
             for (int j = 0; j < currentImage.height; ++j) {
-                int R = currentImage(i, j, 0);
-                int G = currentImage(i, j, 1);
-                int B = currentImage(i, j, 2);
-
-                R += 40;
-                G += 40;
-                B += 40;
-
-                if (R > 255) R = 255;
-                if (G > 255) G = 255;
-                if (B > 255) B = 255; 
-
+                int R = min(255, (int)currentImage(i, j, 0) + 40);
+                int G = min(255, (int)currentImage(i, j, 1) + 40);
+                int B = min(255, (int)currentImage(i, j, 2) + 40);
                 currentImage(i, j, 0) = R;
                 currentImage(i, j, 1) = G;
                 currentImage(i, j, 2) = B;
             }
         }
-        cout << "Sunlight Filter applied! Wano is shining now.\n";
+        cout << "Sunlight Filter applied!\n";
     }
 
-    static void execute_making_image_like_it_is_in_Den_Den_Mushi_television()
-    {
-        cout << "execute_making_image_like_it_is_in_Den_Den_Mushi_television will be here\n";
-    }
-
-    static void execute_making_image_look_purple()
-    {
-        cout << "execute_making_image_look_purple will be here\n";
-    }
+    static void execute_making_image_like_it_is_in_Den_Den_Mushi_television() { cout << "Den Den Mushi...\n"; }
+    static void execute_making_image_look_purple() { cout << "Purple...\n"; }
 
     static void execute_making_image_look_infrared()
     {
@@ -800,149 +577,63 @@ private:
         }
     }
 
-    static void execute_apply_sepia_filter()
-    {
-        cout << "execute_apply_sepia_filter will be here\n";
-    }
+    static void execute_apply_sepia_filter() { cout << "Sepia...\n"; }
+    static void execute_sharpen_image() { cout << "Sharpen...\n"; }
+    static void execute_exit() { execute_save_image(); }
 
-    static void execute_sharpen_image()
+    static void execute_skewing_image()
     {
-        cout << "execute_sharpen_image will be here\n";
-    }
-
-    static void execute_exit()
-    {
-        execute_save_image();
+        cls_skewing_image_screen::run_filter(currentImage);
     }
 
     static void execute_main_screen_option(en_main_screen_option option)
     {
         switch (option)
         {
-        case cls_main_screen::load_image:
-            system("cls");
-            execute_load_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::save_image:
-            system("cls");
-            execute_save_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::grayscale_conversion:
-            system("cls");
-            execute_grayscale_conversion();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::black_and_white_conversion:
-            system("cls");
-            execute_black_and_white_conversion();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::inverting_image:
-            system("cls");
-            execute_inverting_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::adding_image:
-            system("cls");
-            execute_adding_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::flipping_image:
-            system("cls");
-            execute_flipping_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::rotating_image:
-            system("cls");
-            execute_rotating_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::darkening_or_lightening_conversion:
-            system("cls");
-            execute_darkening_or_lightening_conversion();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::resizing_image:
-            system("cls");
-            execute_resizing_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::merging_image:
-            system("cls");
-            execute_merging_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::detecting_image:
-            system("cls");
-            execute_detecting_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::cropping_image:
-            system("cls");
-            execute_cropping_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::blurring_image:
-            system("cls");
-            execute_blurring_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::making_good_natural_sunlight_to_image:
-            system("cls");
-            execute_making_good_natural_sunlight_to_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::making_image_like_it_is_in_Den_Den_Mushi_television:
-            system("cls");
-            execute_making_image_like_it_is_in_Den_Den_Mushi_television();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::making_image_look_purple:
-            system("cls");
-            execute_making_image_look_purple();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::making_image_look_infrared:
-            system("cls");
-            execute_making_image_look_infrared();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::apply_sepia_filter:
-            system("cls");
-            execute_apply_sepia_filter();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::sharpen_image:
-            system("cls");
-            execute_sharpen_image();
-            go_back_to_main_screen();
-            break;
-
-        case cls_main_screen::exit:
-            execute_exit();
-            break;
-
+        case load_image:
+            system("cls"); execute_load_image(); go_back_to_main_screen(); break;
+        case save_image:
+            system("cls"); execute_save_image(); go_back_to_main_screen(); break;
+        case grayscale_conversion:
+            system("cls"); execute_grayscale_conversion(); go_back_to_main_screen(); break;
+        case black_and_white_conversion:
+            system("cls"); execute_black_and_white_conversion(); go_back_to_main_screen(); break;
+        case inverting_image:
+            system("cls"); execute_inverting_image(); go_back_to_main_screen(); break;
+        case adding_image:
+            system("cls"); execute_adding_image(); go_back_to_main_screen(); break;
+        case flipping_image:
+            system("cls"); execute_flipping_image(); go_back_to_main_screen(); break;
+        case rotating_image:
+            system("cls"); execute_rotating_image(); go_back_to_main_screen(); break;
+        case darkening_or_lightening_conversion:
+            system("cls"); execute_darkening_or_lightening_conversion(); go_back_to_main_screen(); break;
+        case resizing_image:
+            system("cls"); execute_resizing_image(); go_back_to_main_screen(); break;
+        case merging_image:
+            system("cls"); execute_merging_image(); go_back_to_main_screen(); break;
+        case detecting_image:
+            system("cls"); execute_detecting_image(); go_back_to_main_screen(); break;
+        case cropping_image:
+            system("cls"); execute_cropping_image(); go_back_to_main_screen(); break;
+        case blurring_image:
+            system("cls"); execute_blurring_image(); go_back_to_main_screen(); break;
+        case making_good_natural_sunlight_to_image:
+            system("cls"); execute_making_good_natural_sunlight_to_image(); go_back_to_main_screen(); break;
+        case making_image_like_it_is_in_Den_Den_Mushi_television:
+            system("cls"); execute_making_image_like_it_is_in_Den_Den_Mushi_television(); go_back_to_main_screen(); break;
+        case skewing_image:
+            system("cls"); execute_skewing_image(); go_back_to_main_screen(); break;
+        case making_image_look_purple:
+            system("cls"); execute_making_image_look_purple(); go_back_to_main_screen(); break;
+        case making_image_look_infrared:
+            system("cls"); execute_making_image_look_infrared(); go_back_to_main_screen(); break;
+        case apply_sepia_filter:
+            system("cls"); execute_apply_sepia_filter(); go_back_to_main_screen(); break;
+        case sharpen_image:
+            system("cls"); execute_sharpen_image(); go_back_to_main_screen(); break;
+        case exit:
+            execute_exit(); break;
         default:
             break;
         }
@@ -967,11 +658,12 @@ private:
         cout << "[14] Blur image\n";
         cout << "[15] Make a good natural sunlight to image\n";
         cout << "[16] Making image like it is in Den Den Mushi (Television)\n";
-        cout << "[17] Make image look purple\n";
-        cout << "[18] Make image infrared\n";
-        cout << "[19] Apply sepia filter\n";
-        cout << "[20] Sharpen image\n";
-        cout << "[21] Exit\n";
+        cout << "[17] Image Skewing Filter (Bonus)\n";
+        cout << "[18] Make image look purple\n";
+        cout << "[19] Make image look infrared\n";
+        cout << "[20] Apply sepia filter\n";
+        cout << "[21] Sharpen image\n";
+        cout << "[22] Exit\n";
 
         execute_main_screen_option(read_main_screen_option());
     }
@@ -988,13 +680,12 @@ private:
     {
         cout << "Press anything to go back to the main screen.....";
         system("pause>0");
-
         execute_main_screen();
     }
 };
 
-Image cls_main_screen::currentImage; // initializing static data member
-string cls_main_screen::currentImageName; // initializing static data member
+Image cls_main_screen::currentImage;
+string cls_main_screen::currentImageName;
 
 int main()
 {
