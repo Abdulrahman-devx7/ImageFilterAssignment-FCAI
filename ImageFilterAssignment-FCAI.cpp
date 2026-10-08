@@ -58,7 +58,7 @@ private:
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
-        
+
         return en_main_screen_option(x);
     }
 
@@ -131,7 +131,7 @@ public:
 private:
     static void execute_black_and_white_conversion()
     {
-        execute_grayscale_conversion(); 
+        execute_grayscale_conversion();
 
         for (int x = 0; x < cls_main_screen::currentImage.width; x++)
         {
@@ -495,7 +495,80 @@ private:
 
     static void execute_detecting_image()
     {
-        cout << "The Edge Detection Filter will be here\n";
+        int **gray = new int *[currentImage.width];
+        for (int i = 0; i < currentImage.width; ++i)
+        {
+            gray[i] = new int[currentImage.height];
+        }
+
+        for (int x = 0; x < currentImage.width; ++x)
+        {
+            for (int y = 0; y < currentImage.height; ++y)
+            {
+                // Average the R, G, and B channels to get grayscale
+                int r = currentImage(x, y, 0);
+                int g = currentImage(x, y, 1);
+                int b = currentImage(x, y, 2);
+                gray[x][y] = (r + g + b) / 3;
+            }
+        }
+
+        int threshold = 100;
+
+        for (int x = 1; x < currentImage.width - 1; ++x)
+        {
+            for (int y = 1; y < currentImage.height - 1; ++y)
+            {
+
+                // Gx Matrix:      Gy Matrix:
+                // [-1  0  1]      [-1 -2 -1]
+                // [-2  0  2]      [ 0  0  0]
+                // [-1  0  1]      [ 1  2  1]
+
+                int gx = 0;
+                int gy = 0;
+
+                // Apply Gx and Gy to the 3x3 neighborhood
+                // Top row
+                gx += gray[x - 1][y - 1] * -1;
+                gx += gray[x][y - 1] * 0;
+                gx += gray[x + 1][y - 1] * 1;
+
+                gy += gray[x - 1][y - 1] * -1;
+                gy += gray[x][y - 1] * -2;
+                gy += gray[x + 1][y - 1] * -1;
+
+                // Middle row
+                gx += gray[x - 1][y] * -2;
+                gx += gray[x][y] * 0;
+                gx += gray[x + 1][y] * 2;
+
+                gy += gray[x - 1][y] * 0;
+                gy += gray[x][y] * 0;
+                gy += gray[x + 1][y] * 0;
+
+                // Bottom row
+                gx += gray[x - 1][y + 1] * -1;
+                gx += gray[x][y + 1] * 0;
+                gx += gray[x + 1][y + 1] * 1;
+
+                gy += gray[x - 1][y + 1] * 1;
+                gy += gray[x][y + 1] * 2;
+                gy += gray[x + 1][y + 1] * 1;
+
+                int magnitude = sqrt((gx * gx) + (gy * gy));
+
+                int finalColor = 255; // Default to white
+                if (magnitude > threshold)
+                {
+                    finalColor = 0;
+                }
+
+                currentImage(x, y, 0) = finalColor;
+                currentImage(x, y, 1) = finalColor;
+                currentImage(x, y, 2) = finalColor;
+            }
+        }
     }
 
     static void execute_cropping_image()
@@ -568,12 +641,12 @@ private:
         /**
          * Separable box blur:
          * a standard 2d Box blur applies a (2R+1)^2 operations per pixel
-         * 
+         *
          * here we used Matrix factorization:
          * | 1 1 1 |          | 1 |
          * | 1 1 1 |  = 1/9 * | 1 | * | 1 1 1 |
-         * | 1 1 1 |          | 1 | 
-         * 
+         * | 1 1 1 |          | 1 |
+         *
          * by applying the horizontal 1D pass first and then the vertical 1D pass.
          */
         Image tempImage(currentImage.width, currentImage.height);
@@ -597,7 +670,7 @@ private:
                 }
             }
         }
-        
+
         // pass 2 : vertical blur
         for (int w = 0; w < currentImage.width; w++)
         {
