@@ -367,3 +367,6 @@ FodyWeavers.xsd
 *.slnx
 *.vcxproj
 *.vcxproj.filters
+/egypt.jpg
+/no.jpg
+/test.jpg
