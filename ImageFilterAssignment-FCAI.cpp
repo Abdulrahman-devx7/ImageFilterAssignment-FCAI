@@ -10,112 +10,36 @@
 
 using namespace std;
 
-struct Node
-{
-    Node *prev;
-    Image image;
-    string imageName;
-    Node *next;
-    Node(Node *back = nullptr, Image image = Image(), string imageName = "", Node *forward = nullptr)
-    {
-        this->prev = back;
-        this->image = image;
-        this->imageName = imageName;
-        this->next = forward;
-    }
-};
-
-class ImageHistory
-{
-    Node *head;
-    Node *current;
-
-    void delete_forward()
-    {
-        Node *del = current->next;
-        Node *ref = del;
-        while (del)
-        {
-            ref = ref->next;
-            delete del;
-            del = ref;
-        }
-        current->next = nullptr;
-    }
-
-public:
-    ImageHistory(Image image, string imageName)
-    {
-        head = new Node(nullptr, image, imageName);
-        current = head;
-    }
-
-    ~ImageHistory()
-    {
-        current = head;
-        while (head)
-        {
-            current = current->next;
-            delete head;
-            head = current;
-        }
-    }
-
-    void newImage(Image image, string imageName)
-    {
-        delete_forward();
-        Node *new_node = new Node(current, image, imageName);
-        current->next = new_node;
-        current = current->next;
-    }
-
-    Node backward(int steps)
-    {
-        for (int i = 0; current->prev && i < steps; i++)
-            current = current->prev;
-        return *current;
-    }
-
-    Node forward(int steps)
-    {
-        for (int i = 0; current->next && i < steps; i++)
-            current = current->next;
-        return *current;
-    }
-};
-
 class cls_main_screen
 {
-private:
+public:
     static Image currentImage;      // it must be public because other filters are in different classes
     static string currentImageName; // it must be public because other filters are in different classes
-    static ImageHistory *history;
 
+private:
     enum en_main_screen_option
     {
-        grayscale_conversion = 1,
-        black_and_white_conversion,
-        inverting_image,
-        adding_image,
-        flipping_image,
-        rotating_image,
-        darkening_or_lightening_conversion,
-        resizing_image,
-        merging_image,
-        detecting_image,
-        cropping_image,
-        blurring_image,
-        making_good_natural_sunlight_to_image,
-        making_image_like_it_is_in_Den_Den_Mushi_television,
-        making_image_look_purple,
-        making_image_look_infrared,
-        apply_skew_image,
-        oil_paint_image,
-        load_image,
-        save_image,
-        forward_image,
-        backward_image,
-        exit
+        load_image = 1,
+        save_image = 2,
+        grayscale_conversion = 3,
+        black_and_white_conversion = 4,
+        inverting_image = 5,
+        adding_image = 6,
+        flipping_image = 7,
+        rotating_image = 8,
+        darkening_or_lightening_conversion = 9,
+        resizing_image = 10,
+        merging_image = 11,
+        detecting_image = 12,
+        cropping_image = 13,
+        blurring_image = 14,
+        making_good_natural_sunlight_to_image = 15,
+        making_image_like_it_is_in_Den_Den_Mushi_television = 16,
+        making_image_look_purple = 17,
+        making_image_look_infrared = 18,
+        apply_skew_image = 19,
+        oil_paint_image = 20,
+        exit = 21
     };
 
     static string read_file_name()
@@ -130,15 +54,54 @@ private:
     static en_main_screen_option read_main_screen_option()
     {
         int x;
-        cout << "\nPlease enter an integer number between 1 and 23: ";
-        while (!(cin >> x) || x < 1 || 23 < x)
+        cout << "\nPlease enter an integer number between 1 and 21: ";
+        while (!(cin >> x) || x < 1 || 21 < x)
         {
-            cout << "Invalid input, please enter an integer number between 1 and 23: ";
+            cout << "Invalid input, please enter an integer number between 1 and 21: ";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
 
         return en_main_screen_option(x);
+    }
+
+    static void execute_save_image()
+    {
+        cout << "Would you like to save the current image to a different file before proceeding? (y/n) ";
+        char answer = 'n';
+        cin >> answer;
+
+        if (tolower(answer) == 'y')
+        {
+            cout << "Please, enter the file name: ";
+            string fileName = read_file_name();
+
+            while (fileName == currentImageName)
+            {
+                cout << "Please, enter another name because this one is as same as your current one: ";
+                fileName = read_file_name();
+            }
+
+            currentImage.saveImage(fileName);
+        }
+        else
+            currentImage.saveImage(currentImageName);
+    }
+
+    static void execute_load_image_bootup()
+    {
+        cout << "Please, enter the name of the image you'd like to load: \n";
+        currentImageName = read_file_name();
+        currentImage.loadNewImage(currentImageName);
+    }
+
+    static void execute_load_image()
+    {
+        execute_save_image();
+
+        cout << "Please, enter the name of the image you'd like to load: \n";
+        currentImageName = read_file_name();
+        currentImage.loadNewImage(currentImageName);
     }
 
     static void execute_grayscale_conversion()
@@ -874,7 +837,7 @@ private:
         cin >> angleDeg;
 
         double angleRad = angleDeg * 3.14159265358979323846 / 180.0;
-
+        
         int originalWidth = currentImage.width;
         int originalHeight = currentImage.height;
         int channels = currentImage.channels;
@@ -884,32 +847,33 @@ private:
 
         Image skewedImage(newWidth, originalHeight);
 
-        for (int i = 0; i < newWidth; ++i)
+
+        for (int i = 0; i < newWidth; ++i) 
         {
-            for (int j = 0; j < originalHeight; ++j)
+            for (int j = 0; j < originalHeight; ++j) 
             {
-                for (int c = 0; c < channels; ++c)
+                for (int c = 0; c < channels; ++c) 
                 {
                     skewedImage(i, j, c) = 255;
                 }
             }
         }
 
-        for (int j = 0; j < originalHeight; ++j)
+        for (int j = 0; j < originalHeight; ++j) 
         {
             int shift = 0;
 
-            if (angleDeg > 0)
+            if (angleDeg > 0) 
                 shift = static_cast<int>((originalHeight - 1 - j) * tan(angleRad));
-            else
+            else 
                 shift = static_cast<int>(j * tan(angleRad));
 
-            for (int i = 0; i < originalWidth; ++i)
+            for (int i = 0; i < originalWidth; ++i) 
             {
                 int newX = i + abs(shift);
-                if (newX >= 0 && newX < newWidth)
+                if (newX >= 0 && newX < newWidth) 
                 {
-                    for (int c = 0; c < channels; ++c)
+                    for (int c = 0; c < channels; ++c) 
                     {
                         unsigned char pixelValue = currentImage(i, j, c);
                         skewedImage(newX, j, c) = pixelValue;
@@ -1001,78 +965,6 @@ private:
         currentImage = outputImage;
     }
 
-    static void execute_forward_image()
-    {
-        cout << "How many steps you want to go? ";
-        int steps;
-        cin >> steps;
-        if (steps <= 0)
-            cout << "\ninvalid input.\n";
-        else
-        {
-            Node newCurrent = history->forward(steps);
-            currentImage = newCurrent.image;
-            currentImageName = newCurrent.imageName;
-            cout << "\nDone.\n";
-        }
-    }
-
-    static void execute_backward_image()
-    {
-        cout << "How many steps you want to go? ";
-        int steps;
-        cin >> steps;
-        if (steps <= 0)
-            cout << "\ninvalid input.\n";
-        else
-        {
-            Node newCurrent = history->backward(steps);
-            currentImage = newCurrent.image;
-            currentImageName = newCurrent.imageName;
-            cout << "\nDone.\n";
-        }
-    }
-    
-    static void execute_save_image()
-    {
-        cout << "Would you like to save the current image to a different file before proceeding? (y/n) ";
-        string answer = "n";
-        cin >> answer;
-
-        if (tolower(answer[0]) == 'y')
-        {
-            cout << "Please, enter the file name: ";
-            string fileName = read_file_name();
-
-            while (fileName == currentImageName)
-            {
-                cout << "Please, enter another name because this one is as same as your current one: ";
-                fileName = read_file_name();
-            }
-
-            currentImage.saveImage(fileName);
-        }
-        else
-            currentImage.saveImage(currentImageName);
-    }
-
-    static void execute_load_image_bootup()
-    {
-        cout << "Please, enter the name of the image you'd like to load: \n";
-        currentImageName = read_file_name();
-        currentImage.loadNewImage(currentImageName);
-        history = new ImageHistory(currentImage, currentImageName);
-    }
-
-    static void execute_load_image()
-    {
-        execute_save_image();
-
-        cout << "Please, enter the name of the image you'd like to load: \n";
-        currentImageName = read_file_name();
-        currentImage.loadNewImage(currentImageName);
-    }
-
     static void execute_exit()
     {
         system("cls");
@@ -1093,7 +985,7 @@ private:
         case cls_main_screen::save_image:
             system("cls");
             execute_save_image();
-            go_back_to_main_screen(false);
+            go_back_to_main_screen();
             break;
 
         case cls_main_screen::grayscale_conversion:
@@ -1204,18 +1096,6 @@ private:
             go_back_to_main_screen();
             break;
 
-        case cls_main_screen::forward_image:
-            system("cls");
-            execute_forward_image();
-            go_back_to_main_screen(false);
-            break;
-
-        case cls_main_screen::backward_image:
-            system("cls");
-            execute_backward_image();
-            go_back_to_main_screen(false);
-            break;
-
         case cls_main_screen::exit:
             execute_exit();
             break;
@@ -1229,45 +1109,39 @@ private:
     {
         system("cls");
         cout << "===========================================================\n";
-        cout << "=====================   Hello Image   =====================\n";
+        cout << "=====================   Filter Menu   =====================\n";
         cout << "===========================================================\n";
 
-        cout << "[1]  Grayscale conversion filter\n";
-        cout << "[2]  Black and white conversion filter\n";
-        cout << "[3]  Invert image\n";
-        cout << "[4]  Add a frame\n";
-        cout << "[5]  Flip image\n";
-        cout << "[6]  Rotate image\n";
-        cout << "[7]  Darken or lighten image\n";
-        cout << "[8]  Resize image\n";
-        cout << "[9]  Merge image\n";
-        cout << "[10] Detect image edges\n";
-        cout << "[11] Crop image\n";
-        cout << "[12] Blur image\n";
-        cout << "[13] Make a good natural sunlight to image\n";
-        cout << "[14] Making image like it is in Den Den Mushi (Television)\n";
-        cout << "[15] Make image look purple\n";
-        cout << "[16] Make image infrared\n";
-        cout << "[17] Apply skew image filter\n";
-        cout << "[18] Apply oil paint filter\n";
-        cout << "[19] Load image\n";
-        cout << "[20] Save image\n";
-        cout << "[21] Go Forward image\n";
-        cout << "[22] Go Backward image\n";
-        cout << "[23] Exit\n";
+        cout << "[1]  Load image\n";
+        cout << "[2]  Save image\n";
+        cout << "[3]  Grayscale conversion filter\n";
+        cout << "[4]  Black and white conversion filter\n";
+        cout << "[5]  Invert image\n";
+        cout << "[6]  Add a frame\n";
+        cout << "[7]  Flip image\n";
+        cout << "[8]  Rotate image\n";
+        cout << "[9]  Darken or lighten image\n";
+        cout << "[10] Resize image\n";
+        cout << "[11] Merge image\n";
+        cout << "[12] Detect image edges\n";
+        cout << "[13] Crop image\n";
+        cout << "[14] Blur image\n";
+        cout << "[15] Make a good natural sunlight to image\n";
+        cout << "[16] Making image like it is in Den Den Mushi (Television)\n";
+        cout << "[17] Make image look purple\n";
+        cout << "[18] Make image infrared\n";
+        cout << "[19] Apply skew image filter\n";
+        cout << "[20] Apply oil paint filter\n";
+        cout << "[21] Exit\n";
 
         execute_main_screen_option(read_main_screen_option());
     }
 
-    static void go_back_to_main_screen(bool addNewImage = true)
+    static void go_back_to_main_screen()
     {
         cout << "Press anything to go back to the main screen.....";
         system("pause > nul");
 
-        if (addNewImage)
-        {
-            history->newImage(currentImage, currentImageName);
-        }
         execute_main_screen();
     }
 
@@ -1281,7 +1155,6 @@ public:
 
 Image cls_main_screen::currentImage;      // initializing static data member
 string cls_main_screen::currentImageName; // initializing static data member
-ImageHistory *cls_main_screen::history = nullptr;
 
 int main()
 {
