@@ -842,7 +842,7 @@ private:
     {
         cout << "\nPlease wait...\n";
         int radius = 5;
-        int levels = 20;
+        const int levels = 20;
         int width = currentImage.width;
         int height = currentImage.height;
 
