@@ -19,27 +19,27 @@ public:
 private:
     enum en_main_screen_option
     {
-        grayscale_conversion = 1,
-        black_and_white_conversion,
-        inverting_image,
-        adding_image,
-        flipping_image,
-        rotating_image,
-        darkening_or_lightening_conversion,
-        resizing_image,
-        merging_image,
-        detecting_image,
-        cropping_image,
-        blurring_image,
-        making_good_natural_sunlight_to_image,
-        making_image_like_it_is_in_Den_Den_Mushi_television,
-        making_image_look_purple,
-        making_image_look_infrared,
-        apply_sepia_filter,
-        oil_paint_image,
-        load_image,
-        save_image,
-        exit
+        load_image = 1,
+        save_image = 2,
+        grayscale_conversion = 3,
+        black_and_white_conversion = 4,
+        inverting_image = 5,
+        adding_image = 6,
+        flipping_image = 7,
+        rotating_image = 8,
+        darkening_or_lightening_conversion = 9,
+        resizing_image = 10,
+        merging_image = 11,
+        detecting_image = 12,
+        cropping_image = 13,
+        blurring_image = 14,
+        making_good_natural_sunlight_to_image = 15,
+        making_image_like_it_is_in_Den_Den_Mushi_television = 16,
+        making_image_look_purple = 17,
+        making_image_look_infrared = 18,
+        apply_skew_image = 19,
+        oil_paint_image = 20,
+        exit = 21
     };
 
     static string read_file_name()
@@ -90,9 +90,6 @@ private:
 
     static void execute_load_image_bootup()
     {
-        cout << "===========================================================\n";
-        cout << "=====================   Hallo Image   =====================\n";
-        cout << "===========================================================\n";
         cout << "Please, enter the name of the image you'd like to load: \n";
         currentImageName = read_file_name();
         currentImage.loadNewImage(currentImageName);
@@ -833,16 +830,65 @@ private:
         }
     }
 
-    static void execute_apply_sepia_filter()
+    static void execute_skew_image()
     {
-        cout << "execute_apply_sepia_filter will be here\n";
+        double angleDeg = 0.0;
+        cout << "Enter the degree of skewness along the vertical axis (e.g., 20 to 45): ";
+        cin >> angleDeg;
+
+        double angleRad = angleDeg * 3.14159265358979323846 / 180.0;
+        
+        int originalWidth = currentImage.width;
+        int originalHeight = currentImage.height;
+        int channels = currentImage.channels;
+
+        int skewOffsetMax = static_cast<int>(originalHeight * tan(angleRad));
+        int newWidth = originalWidth + abs(skewOffsetMax);
+
+        Image skewedImage(newWidth, originalHeight);
+
+
+        for (int i = 0; i < newWidth; ++i) 
+        {
+            for (int j = 0; j < originalHeight; ++j) 
+            {
+                for (int c = 0; c < channels; ++c) 
+                {
+                    skewedImage(i, j, c) = 255;
+                }
+            }
+        }
+
+        for (int j = 0; j < originalHeight; ++j) 
+        {
+            int shift = 0;
+
+            if (angleDeg > 0) 
+                shift = static_cast<int>((originalHeight - 1 - j) * tan(angleRad));
+            else 
+                shift = static_cast<int>(j * tan(angleRad));
+
+            for (int i = 0; i < originalWidth; ++i) 
+            {
+                int newX = i + abs(shift);
+                if (newX >= 0 && newX < newWidth) 
+                {
+                    for (int c = 0; c < channels; ++c) 
+                    {
+                        unsigned char pixelValue = currentImage(i, j, c);
+                        skewedImage(newX, j, c) = pixelValue;
+                    }
+                }
+            }
+        }
+        currentImage = skewedImage;
     }
 
     static void execute_oil_paint_image()
     {
         cout << "\nPlease wait...\n";
         int radius = 5;
-        int levels = 20;
+        const int levels = 20;
         int width = currentImage.width;
         int height = currentImage.height;
 
@@ -1038,9 +1084,9 @@ private:
             go_back_to_main_screen();
             break;
 
-        case cls_main_screen::apply_sepia_filter:
+        case cls_main_screen::apply_skew_image:
             system("cls");
-            execute_apply_sepia_filter();
+            execute_skew_image();
             go_back_to_main_screen();
             break;
 
@@ -1063,28 +1109,29 @@ private:
     {
         system("cls");
         cout << "===========================================================\n";
-        cout << "=====================   Hallo Image   =====================\n";
+        cout << "=====================   Filter Menu   =====================\n";
         cout << "===========================================================\n";
-        cout << "[1]  Grayscale conversion filter\n";
-        cout << "[2]  Black and white conversion filter\n";
-        cout << "[3]  Invert image\n";
-        cout << "[4]  Add a frame\n";
-        cout << "[5]  Flip image\n";
-        cout << "[6]  Rotate image\n";
-        cout << "[7]  Darken or lighten image\n";
-        cout << "[8]  Resize image\n";
-        cout << "[9]  Merge image\n";
-        cout << "[10] Detect image edges\n";
-        cout << "[11] Crop image\n";
-        cout << "[12] Blur image\n";
-        cout << "[13] Make a good natural sunlight to image\n";
-        cout << "[14] Making image like it is in Den Den Mushi (Television)\n";
-        cout << "[15] Make image look purple\n";
-        cout << "[16] Make image infrared\n";
-        cout << "[17] Apply sepia filter\n";
-        cout << "[18] Oil Paint image\n";
-        cout << "[19] Load image\n";
-        cout << "[20] Save image\n";
+
+        cout << "[1]  Load image\n";
+        cout << "[2]  Save image\n";
+        cout << "[3]  Grayscale conversion filter\n";
+        cout << "[4]  Black and white conversion filter\n";
+        cout << "[5]  Invert image\n";
+        cout << "[6]  Add a frame\n";
+        cout << "[7]  Flip image\n";
+        cout << "[8]  Rotate image\n";
+        cout << "[9]  Darken or lighten image\n";
+        cout << "[10] Resize image\n";
+        cout << "[11] Merge image\n";
+        cout << "[12] Detect image edges\n";
+        cout << "[13] Crop image\n";
+        cout << "[14] Blur image\n";
+        cout << "[15] Make a good natural sunlight to image\n";
+        cout << "[16] Making image like it is in Den Den Mushi (Television)\n";
+        cout << "[17] Make image look purple\n";
+        cout << "[18] Make image infrared\n";
+        cout << "[19] Apply skew image filter\n";
+        cout << "[20] Apply oil paint filter\n";
         cout << "[21] Exit\n";
 
         execute_main_screen_option(read_main_screen_option());
