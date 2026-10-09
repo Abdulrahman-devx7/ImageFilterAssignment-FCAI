@@ -364,9 +364,6 @@ FodyWeavers.xsd
 /BlueCar.jpg
 /building.jpg
 
-*.slnx
-*.vcxproj
-*.vcxproj.filters
 /egypt.jpg
 /no.jpg
 /test.jpg
