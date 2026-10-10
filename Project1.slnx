@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="ImageFilterAssignment-FCAI.vcxproj" Id="b6c2b45e-3135-4197-b304-f7fd28810f64" />
+  <Project Path="Project1.vcxproj" />
 </Solution>

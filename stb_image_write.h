@@ -1,3 +1,12 @@
+
+/**
+ * this is an edited version of the stb_image_write for FCAI
+ *
+ */
+
+
+
+
 /* stb_image_write - v1.16 - public domain - http://nothings.org/stb
    writes out PNG/BMP/TGA/JPEG/HDR images to C stdio - Sean Barrett 2010-2015
                                      no warranty implied; use at your own risk
@@ -770,10 +779,14 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
       char header[] = "#?RADIANCE\n# Written by stb_image_write.h\nFORMAT=32-bit_rle_rgbe\n";
       s->func(s->context, header, sizeof(header)-1);
 
-#ifdef __STDC_LIB_EXT1__
+      /* Use secure/portable formatting: prefer sprintf_s on MSVC or
+         when the optional bounds-checking API is available; otherwise
+         use snprintf which is standard on most platforms. This avoids
+         MSVC C4996 deprecation warnings for sprintf. */
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
       len = sprintf_s(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
 #else
-      len = sprintf(buffer, "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
+      len = snprintf(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
 #endif
       s->func(s->context, buffer, len);
 
