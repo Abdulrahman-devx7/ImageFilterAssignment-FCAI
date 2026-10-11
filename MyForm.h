@@ -1,6 +1,7 @@
 #pragma once
 #include "Image_Class.h"
 #include "Filters.h"
+#include "ImageHistory.h"
 #include <msclr/marshal_cppstd.h>
 
 namespace BabyPhotoshop {
@@ -72,8 +73,6 @@ namespace BabyPhotoshop {
             textLabel->Text = text;
             prompt->Controls->Add(textLabel);
 
-            int selectedIndex = -1;
-
             for (int i = 0; i < options->Length; i++) {
                 Button^ btn = gcnew Button();
                 btn->Text = options[i];
@@ -86,12 +85,8 @@ namespace BabyPhotoshop {
                 prompt->Controls->Add(btn);
             }
 
-            // We use the Tag of the clicked button
             prompt->ShowDialog();
-
-            // Find which button was pressed by checking the active control
-            // Simpler approach: just return based on dialog result
-            return -1; // fallback
+            return -1;
         }
     };
 
@@ -102,6 +97,8 @@ namespace BabyPhotoshop {
         {
             InitializeComponent();
             currentImage = new ::Image();
+            history = nullptr;
+            UpdateHistoryButtons();
         }
 
     protected:
@@ -109,15 +106,22 @@ namespace BabyPhotoshop {
         {
             if (components) delete components;
             if (currentImage) delete currentImage;
+            if (history) {
+                delete history;
+                history = nullptr;
+            }
         }
 
     private:
         ::Image* currentImage;
+        ImageHistory* history;
 
         // UI Elements
         System::Windows::Forms::PictureBox^ pictureBox1;
         System::Windows::Forms::Button^ btnLoad;
         System::Windows::Forms::Button^ btnSave;
+        System::Windows::Forms::Button^ btnBackward;
+        System::Windows::Forms::Button^ btnForward;
         System::Windows::Forms::FlowLayoutPanel^ filterPanel;
         System::Windows::Forms::Panel^ mainPanel;
 
@@ -149,6 +153,8 @@ namespace BabyPhotoshop {
             this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
             this->btnLoad = (gcnew System::Windows::Forms::Button());
             this->btnSave = (gcnew System::Windows::Forms::Button());
+            this->btnBackward = (gcnew System::Windows::Forms::Button());
+            this->btnForward = (gcnew System::Windows::Forms::Button());
             this->filterPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
             this->mainPanel = (gcnew System::Windows::Forms::Panel());
 
@@ -193,9 +199,9 @@ namespace BabyPhotoshop {
             this->btnLoad->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->btnLoad->ForeColor = System::Drawing::Color::White;
             this->btnLoad->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
-            this->btnLoad->Location = System::Drawing::Point(450, 560);
+            this->btnLoad->Location = System::Drawing::Point(280, 560);
             this->btnLoad->Name = L"btnLoad";
-            this->btnLoad->Size = System::Drawing::Size(150, 40);
+            this->btnLoad->Size = System::Drawing::Size(120, 40);
             this->btnLoad->TabIndex = 1;
             this->btnLoad->Text = L"Load Image";
             this->btnLoad->UseVisualStyleBackColor = false;
@@ -208,14 +214,46 @@ namespace BabyPhotoshop {
             this->btnSave->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->btnSave->ForeColor = System::Drawing::Color::White;
             this->btnSave->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
-            this->btnSave->Location = System::Drawing::Point(650, 560);
+            this->btnSave->Location = System::Drawing::Point(415, 560);
             this->btnSave->Name = L"btnSave";
-            this->btnSave->Size = System::Drawing::Size(150, 40);
+            this->btnSave->Size = System::Drawing::Size(120, 40);
             this->btnSave->TabIndex = 2;
             this->btnSave->Text = L"Save Image";
             this->btnSave->UseVisualStyleBackColor = false;
             this->btnSave->Click += gcnew System::EventHandler(this, &MyForm::btnSave_Click);
             this->btnSave->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
+            //
+            // btnBackward
+            //
+            this->btnBackward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+            this->btnBackward->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+            this->btnBackward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
+            this->btnBackward->Location = System::Drawing::Point(550, 560);
+            this->btnBackward->Name = L"btnBackward";
+            this->btnBackward->Size = System::Drawing::Size(140, 40);
+            this->btnBackward->TabIndex = 4;
+            this->btnBackward->Text = L"<- Backward";
+            this->btnBackward->UseVisualStyleBackColor = false;
+            this->btnBackward->Enabled = false;
+            this->btnBackward->Click += gcnew System::EventHandler(this, &MyForm::btnBackward_Click);
+            this->btnBackward->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
+            //
+            // btnForward
+            //
+            this->btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+            this->btnForward->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+            this->btnForward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
+            this->btnForward->Location = System::Drawing::Point(705, 560);
+            this->btnForward->Name = L"btnForward";
+            this->btnForward->Size = System::Drawing::Size(140, 40);
+            this->btnForward->TabIndex = 5;
+            this->btnForward->Text = L"Forward ->";
+            this->btnForward->UseVisualStyleBackColor = false;
+            this->btnForward->Enabled = false;
+            this->btnForward->Click += gcnew System::EventHandler(this, &MyForm::btnForward_Click);
+            this->btnForward->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
             //
             // filterPanel
             //
@@ -288,6 +326,8 @@ namespace BabyPhotoshop {
             this->Controls->Add(this->filterPanel);
             this->Controls->Add(this->btnSave);
             this->Controls->Add(this->btnLoad);
+            this->Controls->Add(this->btnBackward);
+            this->Controls->Add(this->btnForward);
             this->Controls->Add(this->pictureBox1);
             this->Name = L"MyForm";
             this->Text = L"Baby Photoshop - FCAI";
@@ -335,6 +375,69 @@ namespace BabyPhotoshop {
             pictureBox1->Image = bmp;
         }
 
+        // =============================================
+        // UNDO / REDO HISTORY SUPPORT
+        // =============================================
+        void UpdateHistoryButtons() {
+            if (history == nullptr) {
+                btnBackward->Enabled = false;
+                btnForward->Enabled = false;
+                btnBackward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                return;
+            }
+
+            bool canBack = history->canBackward();
+            bool canFwd = history->canForward();
+
+            btnBackward->Enabled = canBack;
+            btnForward->Enabled = canFwd;
+
+            if (canBack) {
+                btnBackward->BackColor = System::Drawing::Color::FromArgb(90, 65, 140);
+                btnBackward->ForeColor = System::Drawing::Color::White;
+            } else {
+                btnBackward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+            }
+
+            if (canFwd) {
+                btnForward->BackColor = System::Drawing::Color::FromArgb(90, 65, 140);
+                btnForward->ForeColor = System::Drawing::Color::White;
+            } else {
+                btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+            }
+        }
+
+        void RecordHistory(String^ actionName) {
+            if (history != nullptr && currentImage != nullptr && currentImage->imageData != nullptr) {
+                std::string name = msclr::interop::marshal_as<std::string>(actionName);
+                history->newImage(*currentImage, name);
+                UpdateHistoryButtons();
+            }
+        }
+
+        System::Void btnBackward_Click(System::Object^ sender, System::EventArgs^ e) {
+            if (history != nullptr && history->canBackward()) {
+                Node prevNode = history->backward(1);
+                *currentImage = prevNode.image;
+                UpdatePictureBox();
+                UpdateHistoryButtons();
+            }
+        }
+
+        System::Void btnForward_Click(System::Object^ sender, System::EventArgs^ e) {
+            if (history != nullptr && history->canForward()) {
+                Node nextNode = history->forward(1);
+                *currentImage = nextNode.image;
+                UpdatePictureBox();
+                UpdateHistoryButtons();
+            }
+        }
+
         // Helper: check if image is loaded
         bool CheckImageLoaded() {
             if (currentImage->imageData == nullptr || currentImage->width <= 0) {
@@ -354,7 +457,13 @@ namespace BabyPhotoshop {
                 std::string filepath = msclr::interop::marshal_as<std::string>(ofd->FileName);
                 try {
                     currentImage->loadNewImage(filepath);
+                    if (history != nullptr) {
+                        delete history;
+                        history = nullptr;
+                    }
+                    history = new ImageHistory(*currentImage, filepath);
                     UpdatePictureBox();
+                    UpdateHistoryButtons();
                 } catch (...) {
                     MessageBox::Show("Failed to load image!", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
                 }
@@ -382,6 +491,7 @@ namespace BabyPhotoshop {
         System::Void btn1_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyGrayscale(*currentImage);
+            RecordHistory(L"Grayscale");
             UpdatePictureBox();
         }
 
@@ -391,6 +501,7 @@ namespace BabyPhotoshop {
         System::Void btn2_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyBlackAndWhite(*currentImage);
+            RecordHistory(L"Black & White");
             UpdatePictureBox();
         }
 
@@ -400,6 +511,7 @@ namespace BabyPhotoshop {
         System::Void btn3_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyInvert(*currentImage);
+            RecordHistory(L"Invert");
             UpdatePictureBox();
         }
 
@@ -413,9 +525,11 @@ namespace BabyPhotoshop {
                 "Add Frame", MessageBoxButtons::YesNoCancel, MessageBoxIcon::Question);
             if (result == System::Windows::Forms::DialogResult::Yes) {
                 applyFrame(*currentImage, 1);
+                RecordHistory(L"Simple Frame");
                 UpdatePictureBox();
             } else if (result == System::Windows::Forms::DialogResult::No) {
                 applyFrame(*currentImage, 2);
+                RecordHistory(L"Decorated Frame");
                 UpdatePictureBox();
             }
         }
@@ -430,9 +544,11 @@ namespace BabyPhotoshop {
                 "Flip Image", MessageBoxButtons::YesNoCancel, MessageBoxIcon::Question);
             if (result == System::Windows::Forms::DialogResult::Yes) {
                 applyFlipHorizontal(*currentImage);
+                RecordHistory(L"Horizontal Flip");
                 UpdatePictureBox();
             } else if (result == System::Windows::Forms::DialogResult::No) {
                 applyFlipVertical(*currentImage);
+                RecordHistory(L"Vertical Flip");
                 UpdatePictureBox();
             }
         }
@@ -449,6 +565,7 @@ namespace BabyPhotoshop {
                 if (angle == 90 || angle == 180 || angle == 270) {
                     ::Image result = applyRotate(*currentImage, angle);
                     *currentImage = result;
+                    RecordHistory(L"Rotate");
                     UpdatePictureBox();
                 } else {
                     MessageBox::Show("Please enter 90, 180, or 270.", "Invalid Angle", MessageBoxButtons::OK, MessageBoxIcon::Warning);
@@ -477,10 +594,13 @@ namespace BabyPhotoshop {
                     MessageBox::Show("Percentage must be between 0 and 100.", "Invalid", MessageBoxButtons::OK, MessageBoxIcon::Warning);
                     return;
                 }
-                if (result == System::Windows::Forms::DialogResult::Yes)
+                if (result == System::Windows::Forms::DialogResult::Yes) {
                     applyDarken(*currentImage, pct);
-                else
+                    RecordHistory(L"Darken");
+                } else {
                     applyLighten(*currentImage, pct);
+                    RecordHistory(L"Lighten");
+                }
                 UpdatePictureBox();
             } catch (...) {
                 MessageBox::Show("Please enter a valid number.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -505,6 +625,7 @@ namespace BabyPhotoshop {
                 }
                 ::Image result = applyResize(*currentImage, newW, newH);
                 *currentImage = result;
+                RecordHistory(L"Resize");
                 UpdatePictureBox();
             } catch (...) {
                 MessageBox::Show("Please enter valid numbers.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -541,6 +662,7 @@ namespace BabyPhotoshop {
             int mode = (result == System::Windows::Forms::DialogResult::Yes) ? 1 : 2;
             ::Image merged = applyMerge(*currentImage, img2, mode);
             *currentImage = merged;
+            RecordHistory(L"Merge");
             UpdatePictureBox();
         }
 
@@ -550,6 +672,7 @@ namespace BabyPhotoshop {
         System::Void btn10_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyEdgeDetect(*currentImage);
+            RecordHistory(L"Edge Detect");
             UpdatePictureBox();
         }
 
@@ -578,6 +701,7 @@ namespace BabyPhotoshop {
                 }
                 ::Image result = applyCrop(*currentImage, sx, sy, cw, ch);
                 *currentImage = result;
+                RecordHistory(L"Crop");
                 UpdatePictureBox();
             } catch (...) {
                 MessageBox::Show("Please enter valid numbers.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
@@ -600,6 +724,7 @@ namespace BabyPhotoshop {
                 this->Cursor = Cursors::WaitCursor;
                 applyBlur(*currentImage, level);
                 this->Cursor = Cursors::Default;
+                RecordHistory(L"Blur");
                 UpdatePictureBox();
             } catch (...) {
                 this->Cursor = Cursors::Default;
@@ -613,6 +738,7 @@ namespace BabyPhotoshop {
         System::Void btn13_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applySunlight(*currentImage);
+            RecordHistory(L"Sunlight");
             UpdatePictureBox();
         }
 
@@ -622,6 +748,7 @@ namespace BabyPhotoshop {
         System::Void btn14_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyTV(*currentImage);
+            RecordHistory(L"TV Effect");
             UpdatePictureBox();
         }
 
@@ -631,6 +758,7 @@ namespace BabyPhotoshop {
         System::Void btn15_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyPurple(*currentImage);
+            RecordHistory(L"Purple");
             UpdatePictureBox();
         }
 
@@ -640,6 +768,7 @@ namespace BabyPhotoshop {
         System::Void btn16_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
             applyInfrared(*currentImage);
+            RecordHistory(L"Infrared");
             UpdatePictureBox();
         }
 
@@ -656,6 +785,7 @@ namespace BabyPhotoshop {
                 ::Image result = applySkew(*currentImage, angle);
                 *currentImage = result;
                 this->Cursor = Cursors::Default;
+                RecordHistory(L"Skew");
                 UpdatePictureBox();
             } catch (...) {
                 this->Cursor = Cursors::Default;
@@ -671,6 +801,7 @@ namespace BabyPhotoshop {
             this->Cursor = Cursors::WaitCursor;
             applyOilPaint(*currentImage);
             this->Cursor = Cursors::Default;
+            RecordHistory(L"Oil Paint");
             UpdatePictureBox();
         }
     };

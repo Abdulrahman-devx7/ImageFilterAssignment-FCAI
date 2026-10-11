@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Filters.h" />
+    <ClInclude Include="ImageHistory.h" />
     <ClInclude Include="Image_Class.h" />
     <ClInclude Include="MyForm.h" />
     <ClInclude Include="stb_image.h" />
