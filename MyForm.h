@@ -98,6 +98,12 @@ namespace BabyPhotoshop {
             InitializeComponent();
             currentImage = new ::Image();
             history = nullptr;
+            cropInteractionMode = false;
+            isSelectingCrop = false;
+            cropStartX = 0;
+            cropStartY = 0;
+            cropCurrentX = 0;
+            cropCurrentY = 0;
             UpdateHistoryButtons();
         }
 
@@ -115,6 +121,14 @@ namespace BabyPhotoshop {
     private:
         ::Image* currentImage;
         ImageHistory* history;
+
+        // Interactive Crop tracking
+        bool cropInteractionMode;
+        bool isSelectingCrop;
+        int cropStartX;
+        int cropStartY;
+        int cropCurrentX;
+        int cropCurrentY;
 
         // UI Elements
         System::Windows::Forms::PictureBox^ pictureBox1;
@@ -192,6 +206,10 @@ namespace BabyPhotoshop {
             this->pictureBox1->TabIndex = 0;
             this->pictureBox1->TabStop = false;
             this->pictureBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left | System::Windows::Forms::AnchorStyles::Right);
+            this->pictureBox1->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseDown);
+            this->pictureBox1->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseMove);
+            this->pictureBox1->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseUp);
+            this->pictureBox1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &MyForm::pictureBox1_Paint);
             //
             // btnLoad
             //
@@ -766,10 +784,117 @@ namespace BabyPhotoshop {
         }
 
         // =============================================
-        // FILTER 11: Crop (text boxes for x, y, w, h)
+        // FILTER 11: Crop (drag on image OR manual coordinates)
         // =============================================
+        System::Void pictureBox1_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
+            if (cropInteractionMode && e->Button == System::Windows::Forms::MouseButtons::Left) {
+                isSelectingCrop = true;
+                cropStartX = e->X;
+                cropStartY = e->Y;
+                cropCurrentX = e->X;
+                cropCurrentY = e->Y;
+            }
+        }
+
+        System::Void pictureBox1_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
+            if (cropInteractionMode && isSelectingCrop) {
+                cropCurrentX = e->X;
+                cropCurrentY = e->Y;
+                pictureBox1->Invalidate();
+            }
+        }
+
+        System::Void pictureBox1_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
+            if (cropInteractionMode && isSelectingCrop) {
+                isSelectingCrop = false;
+                cropInteractionMode = false;
+                pictureBox1->Cursor = Cursors::Default;
+                pictureBox1->Invalidate();
+
+                if (!CheckImageLoaded()) return;
+
+                int minX = Math::Min(cropStartX, cropCurrentX);
+                int maxX = Math::Max(cropStartX, cropCurrentX);
+                int minY = Math::Min(cropStartY, cropCurrentY);
+                int maxY = Math::Max(cropStartY, cropCurrentY);
+
+                float pbWidth = (float)pictureBox1->ClientSize.Width;
+                float pbHeight = (float)pictureBox1->ClientSize.Height;
+                float imgWidth = (float)currentImage->width;
+                float imgHeight = (float)currentImage->height;
+
+                if (imgWidth <= 0 || imgHeight <= 0 || pbWidth <= 0 || pbHeight <= 0) return;
+
+                float ratio = Math::Min(pbWidth / imgWidth, pbHeight / imgHeight);
+                float offsetX = (pbWidth - imgWidth * ratio) / 2.0f;
+                float offsetY = (pbHeight - imgHeight * ratio) / 2.0f;
+
+                int sx = (int)Math::Round((minX - offsetX) / ratio);
+                int sy = (int)Math::Round((minY - offsetY) / ratio);
+                int ex = (int)Math::Round((maxX - offsetX) / ratio);
+                int ey = (int)Math::Round((maxY - offsetY) / ratio);
+
+                sx = Math::Max(0, Math::Min(sx, currentImage->width - 1));
+                sy = Math::Max(0, Math::Min(sy, currentImage->height - 1));
+                ex = Math::Max(1, Math::Min(ex, currentImage->width));
+                ey = Math::Max(1, Math::Min(ey, currentImage->height));
+
+                int cw = ex - sx;
+                int ch = ey - sy;
+
+                if (cw > 5 && ch > 5) {
+                    try {
+                        ::Image result = applyCrop(*currentImage, sx, sy, cw, ch);
+                        *currentImage = result;
+                        RecordHistory(L"Interactive Crop");
+                        UpdatePictureBox();
+                    } catch (...) {
+                        MessageBox::Show("Failed to crop image.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                    }
+                }
+            }
+        }
+
+        System::Void pictureBox1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+            if (isSelectingCrop) {
+                int x = Math::Min(cropStartX, cropCurrentX);
+                int y = Math::Min(cropStartY, cropCurrentY);
+                int w = Math::Abs(cropCurrentX - cropStartX);
+                int h = Math::Abs(cropCurrentY - cropStartY);
+
+                if (w > 0 && h > 0) {
+                    System::Drawing::Pen^ pen = gcnew System::Drawing::Pen(System::Drawing::Color::Cyan, 2.0f);
+                    pen->DashStyle = System::Drawing::Drawing2D::DashStyle::Dash;
+                    e->Graphics->DrawRectangle(pen, x, y, w, h);
+
+                    System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(50, 0, 200, 255));
+                    e->Graphics->FillRectangle(brush, x, y, w, h);
+
+                    delete pen;
+                    delete brush;
+                }
+            }
+        }
+
         System::Void btn11_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
+
+            System::Windows::Forms::DialogResult choice = MessageBox::Show(
+                "Choose Cropping Method:\n\nClick YES to Drag on the image with your mouse\nClick NO to enter Coordinates manually",
+                "Crop Image",
+                MessageBoxButtons::YesNoCancel,
+                MessageBoxIcon::Question);
+
+            if (choice == System::Windows::Forms::DialogResult::Cancel) return;
+
+            if (choice == System::Windows::Forms::DialogResult::Yes) {
+                cropInteractionMode = true;
+                pictureBox1->Cursor = Cursors::Cross;
+                MessageBox::Show("Click and drag over the image to select the crop box, then release your mouse.", "Interactive Crop", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                return;
+            }
+
+            // Mode 2: Manual coordinates
             String^ xStr = Prompt::ShowDialog("Start X coordinate:", "Crop Image");
             if (String::IsNullOrEmpty(xStr)) return;
             String^ yStr = Prompt::ShowDialog("Start Y coordinate:", "Crop Image");

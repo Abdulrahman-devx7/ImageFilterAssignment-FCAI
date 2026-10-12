@@ -63,10 +63,20 @@ public:
 
     void newImage(const Image& image, const std::string& imageName = "")
     {
-        delete_forward();
-        Node *new_node = new Node(current, image, imageName);
+        if (!current) {
+            head = new Node(nullptr, image, imageName);
+            current = head;
+            return;
+        }
+
+        // Insert new state between current and current->next to preserve forward history
+        Node *old_next = current->next;
+        Node *new_node = new Node(current, image, imageName, old_next);
+        if (old_next) {
+            old_next->prev = new_node;
+        }
         current->next = new_node;
-        current = current->next;
+        current = new_node;
     }
 
     Node backward(int steps = 1)
