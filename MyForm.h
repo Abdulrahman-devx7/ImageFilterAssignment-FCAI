@@ -652,27 +652,72 @@ namespace BabyPhotoshop {
         }
 
         // =============================================
-        // FILTER 8: Resize (text boxes for width & height)
+        // FILTER 8: Resize (dimensions OR scale ratio)
         // =============================================
         System::Void btn8_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!CheckImageLoaded()) return;
-            String^ wStr = Prompt::ShowDialog("Enter new width:", "Resize Image");
-            if (String::IsNullOrEmpty(wStr)) return;
-            String^ hStr = Prompt::ShowDialog("Enter new height:", "Resize Image");
-            if (String::IsNullOrEmpty(hStr)) return;
-            try {
-                int newW = Int32::Parse(wStr);
-                int newH = Int32::Parse(hStr);
-                if (newW <= 0 || newH <= 0) {
-                    MessageBox::Show("Dimensions must be positive.", "Invalid", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+
+            System::Windows::Forms::DialogResult mode = MessageBox::Show(
+                "Choose Resizing Mode:\n\nClick YES to enter Dimensions (Width & Height)\nClick NO to enter Scale Ratio (e.g. 0.5 for half, 2 for double)",
+                "Resize Image",
+                MessageBoxButtons::YesNoCancel,
+                MessageBoxIcon::Question);
+
+            if (mode == System::Windows::Forms::DialogResult::Cancel) return;
+
+            int newW = 0, newH = 0;
+
+            if (mode == System::Windows::Forms::DialogResult::Yes) {
+                // Mode 1: Explicit dimensions
+                String^ wStr = Prompt::ShowDialog("Enter new width (pixels):", "Resize - Width");
+                if (String::IsNullOrEmpty(wStr)) return;
+                String^ hStr = Prompt::ShowDialog("Enter new height (pixels):", "Resize - Height");
+                if (String::IsNullOrEmpty(hStr)) return;
+
+                try {
+                    newW = Int32::Parse(wStr);
+                    newH = Int32::Parse(hStr);
+                    if (newW <= 0 || newH <= 0) {
+                        MessageBox::Show("Dimensions must be positive.", "Invalid", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                        return;
+                    }
+                } catch (...) {
+                    MessageBox::Show("Please enter valid numbers.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
                     return;
                 }
+            }
+            else if (mode == System::Windows::Forms::DialogResult::No) {
+                // Mode 2: Scale ratio
+                String^ ratioStr = Prompt::ShowDialog("Enter scale ratio (e.g. 0.5 for half, 2 for double, max 20):", "Resize - Scale Ratio");
+                if (String::IsNullOrEmpty(ratioStr)) return;
+
+                try {
+                    double ratio = Double::Parse(ratioStr);
+                    if (ratio <= 0.0) {
+                        MessageBox::Show("Scale ratio must be positive.", "Invalid", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                        return;
+                    }
+                    if (ratio > 20.0) {
+                        ratio = 20.0;
+                    }
+                    newW = Math::Max(1, (int)(currentImage->width * ratio));
+                    newH = Math::Max(1, (int)(currentImage->height * ratio));
+                } catch (...) {
+                    MessageBox::Show("Please enter a valid scale ratio.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                    return;
+                }
+            }
+
+            try {
+                this->Cursor = Cursors::WaitCursor;
                 ::Image result = applyResize(*currentImage, newW, newH);
                 *currentImage = result;
+                this->Cursor = Cursors::Default;
                 RecordHistory(L"Resize");
                 UpdatePictureBox();
             } catch (...) {
-                MessageBox::Show("Please enter valid numbers.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                this->Cursor = Cursors::Default;
+                MessageBox::Show("Failed to resize image.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
             }
         }
 
