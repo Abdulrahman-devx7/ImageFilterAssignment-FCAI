@@ -333,6 +333,7 @@ namespace BabyPhotoshop {
             this->Text = L"Baby Photoshop - FCAI";
             this->WindowState = System::Windows::Forms::FormWindowState::Maximized;
             this->MinimumSize = System::Drawing::Size(1000, 650);
+            this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &MyForm::MyForm_FormClosing);
 
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
             this->filterPanel->ResumeLayout(false);
@@ -448,9 +449,63 @@ namespace BabyPhotoshop {
         }
 
         // =============================================
-        // LOAD & SAVE
+        // LOAD & SAVE & EXIT HANDLERS
         // =============================================
+        bool PromptAndSaveImage() {
+            if (!CheckImageLoaded()) return false;
+            SaveFileDialog^ sfd = gcnew SaveFileDialog();
+            sfd->Filter = "JPG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp|TGA Image|*.tga";
+            if (sfd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
+                std::string filepath = msclr::interop::marshal_as<std::string>(sfd->FileName);
+                try {
+                    currentImage->saveImage(filepath);
+                    MessageBox::Show("Image saved successfully!", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
+                    return true;
+                } catch (...) {
+                    MessageBox::Show("Failed to save image.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        System::Void MyForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
+            if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
+                System::Windows::Forms::DialogResult result = MessageBox::Show(
+                    "Would you like to save the current image before exiting?",
+                    "Save before Exit",
+                    MessageBoxButtons::YesNoCancel,
+                    MessageBoxIcon::Question);
+
+                if (result == System::Windows::Forms::DialogResult::Yes) {
+                    bool saved = PromptAndSaveImage();
+                    if (!saved) {
+                        e->Cancel = true; // User cancelled save file dialog, stay in app
+                    }
+                }
+                else if (result == System::Windows::Forms::DialogResult::Cancel) {
+                    e->Cancel = true; // User aborted exit
+                }
+            }
+        }
+
         System::Void btnLoad_Click(System::Object^ sender, System::EventArgs^ e) {
+            if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
+                System::Windows::Forms::DialogResult res = MessageBox::Show(
+                    "Would you like to save the current image before loading a new one?",
+                    "Save Current Image",
+                    MessageBoxButtons::YesNoCancel,
+                    MessageBoxIcon::Question);
+
+                if (res == System::Windows::Forms::DialogResult::Yes) {
+                    bool saved = PromptAndSaveImage();
+                    if (!saved) return;
+                }
+                else if (res == System::Windows::Forms::DialogResult::Cancel) {
+                    return;
+                }
+            }
+
             OpenFileDialog^ ofd = gcnew OpenFileDialog();
             ofd->Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.tga";
             if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
@@ -471,18 +526,7 @@ namespace BabyPhotoshop {
         }
 
         System::Void btnSave_Click(System::Object^ sender, System::EventArgs^ e) {
-            if (!CheckImageLoaded()) return;
-            SaveFileDialog^ sfd = gcnew SaveFileDialog();
-            sfd->Filter = "JPG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp|TGA Image|*.tga";
-            if (sfd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-                std::string filepath = msclr::interop::marshal_as<std::string>(sfd->FileName);
-                try {
-                    currentImage->saveImage(filepath);
-                    MessageBox::Show("Image saved successfully!", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
-                } catch (...) {
-                    MessageBox::Show("Failed to save image.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
-                }
-            }
+            PromptAndSaveImage();
         }
 
         // =============================================
