@@ -107,4 +107,36 @@ public:
     {
         return current;
     }
+
+    int getUndoCount() const
+    {
+        int count = 0;
+        Node* p = current;
+        while (p && p->prev) {
+            count++;
+            p = p->prev;
+        }
+        return count;
+    }
+
+    int getRedoCount() const
+    {
+        int count = 0;
+        Node* p = current;
+        while (p && p->next) {
+            count++;
+            p = p->next;
+        }
+        return count;
+    }
+
+    int getTotalCount() const
+    {
+        return getUndoCount() + getRedoCount() + (current != nullptr ? 1 : 0);
+    }
+
+    int getCurrentIndex() const
+    {
+        return getUndoCount() + (current != nullptr ? 1 : 0);
+    }
 };
