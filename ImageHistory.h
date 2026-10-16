@@ -69,14 +69,10 @@ public:
             return;
         }
 
-        // Insert new state between current and current->next to preserve forward history
-        Node *old_next = current->next;
-        Node *new_node = new Node(current, image, imageName, old_next);
-        if (old_next) {
-            old_next->prev = new_node;
-        }
+        delete_forward();
+        Node *new_node = new Node(current, image, imageName);
         current->next = new_node;
-        current = new_node;
+        current = current->next;
     }
 
     Node backward(int steps = 1)
