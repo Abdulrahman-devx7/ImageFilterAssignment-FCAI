@@ -123,7 +123,7 @@ namespace BabyPhotoshop {
             cropCurrentX = 0;
             cropCurrentY = 0;
             UpdateHistoryButtons();
-            UpdateStatusTelemetry(L"Ready - Load or drop an image to begin");
+            UpdateStatusTelemetry(L"Ready - Load or drop an image (Ctrl+O) to begin");
         }
 
     protected:
@@ -186,10 +186,13 @@ namespace BabyPhotoshop {
         System::Windows::Forms::Button^ btn18;
 
         System::ComponentModel::Container^ components;
+        System::Windows::Forms::ToolTip^ toolTip1;
 
 #pragma region Windows Form Designer generated code
         void InitializeComponent(void)
         {
+            this->components = (gcnew System::ComponentModel::Container());
+            this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
             this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
             this->btnLoad = (gcnew System::Windows::Forms::Button());
             this->btnSave = (gcnew System::Windows::Forms::Button());
@@ -388,6 +391,25 @@ namespace BabyPhotoshop {
             this->statusLabelHistory->Text = L"History: Idle";
             this->statusLabelHistory->ForeColor = System::Drawing::Color::FromArgb(210, 175, 255);
 
+            //
+            // ToolTip configuration & Status Strip Item Tooltips
+            //
+            this->statusStrip1->ShowItemToolTips = true;
+            this->statusLabelMsg->ToolTipText = L"Application status and latest action log";
+            this->statusLabelDim->ToolTipText = L"Current image dimensions (Width x Height)";
+            this->statusLabelChannels->ToolTipText = L"Active color channels and bit depth";
+            this->statusLabelHistory->ToolTipText = L"History stack position (Ctrl+Z to Undo, Ctrl+Y to Redo)";
+
+            this->toolTip1->AutoPopDelay = 6000;
+            this->toolTip1->InitialDelay = 350;
+            this->toolTip1->ReshowDelay = 100;
+            this->toolTip1->ShowAlways = true;
+            this->toolTip1->SetToolTip(this->btnLoad, L"Load Image (Ctrl+O)\nOpen an image file from disk (JPG, PNG, BMP, TGA)");
+            this->toolTip1->SetToolTip(this->btnSave, L"Save Image (Ctrl+S)\nSave the current processed image to disk");
+            this->toolTip1->SetToolTip(this->btnBackward, L"Undo / Backward (Ctrl+Z)\nRevert the most recent filter or edit");
+            this->toolTip1->SetToolTip(this->btnForward, L"Redo / Forward (Ctrl+Y or Ctrl+Shift+Z)\nRe-apply the previously undone filter");
+            this->toolTip1->SetToolTip(this->pictureBox1, L"Image Canvas\nDrop image files here to load directly");
+
             // Create all 18 buttons with names
             cli::array<String^>^ names = gcnew cli::array<String^> {
                 L"1. Grayscale", L"2. Black & White", L"3. Invert",
@@ -396,6 +418,27 @@ namespace BabyPhotoshop {
                 L"10. Edge Detect", L"11. Crop", L"12. Blur",
                 L"13. Sunlight", L"14. TV Effect", L"15. Purple",
                 L"16. Infrared", L"17. Skew", L"18. Oil Paint"
+            };
+
+            cli::array<String^>^ filterTips = gcnew cli::array<String^> {
+                L"Grayscale (Filter 1)\nConvert image colors into balanced grayscale luminance",
+                L"Black & White (Filter 2)\nThreshold image into high-contrast monochrome pixels",
+                L"Invert Colors (Filter 3)\nInvert all color channels for a photo negative effect",
+                L"Add Frame (Filter 4)\nApply a solid outer border or ornate corner decorative frame",
+                L"Flip Image (Filter 5)\nMirror image horizontally or vertically",
+                L"Rotate Image (Filter 6)\nRotate image clockwise by 90, 180, or 270 degrees",
+                L"Darken / Lighten (Filter 7)\nAdjust image exposure brightness by custom percentage",
+                L"Resize Image (Filter 8)\nScale image by custom pixel dimensions or scale ratio",
+                L"Merge Images (Filter 9)\nBlend and composite current image with a second image",
+                L"Detect Edges (Filter 10)\nHighlight structural edges using Sobel gradient operator",
+                L"Crop Image (Filter 11)\nCrop canvas interactively with mouse drag or coordinates",
+                L"Blur Image (Filter 12)\nSmooth noise using Gaussian-like box blur (Light/Medium/Strong)",
+                L"Sunlight Effect (Filter 13)\nAdd a warm golden sunlight glow and atmospheric tint",
+                L"TV Scanlines (Filter 14)\nVintage Den Den Mushi CRT television scanline & static effect",
+                L"Purple Tint (Filter 15)\nRich cinematic purple and magenta color grading",
+                L"Infrared Simulation (Filter 16)\nInvert cool tones to simulate thermal infrared photography",
+                L"Skew / Shear (Filter 17)\nShear image horizontally by a custom degree angle",
+                L"Oil Painting (Filter 18)\nStylize image with painterly oil brush strokes and textures"
             };
 
             cli::array<Button^>^ btns = gcnew cli::array<Button^> {
@@ -440,6 +483,7 @@ namespace BabyPhotoshop {
                 btns[i]->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
                 btns[i]->Cursor = System::Windows::Forms::Cursors::Hand;
                 btns[i]->Click += handlers[i];
+                this->toolTip1->SetToolTip(btns[i], filterTips[i]);
             }
 
             // Category Headers (Clean ASCII, styled with electric blue accent)
@@ -523,6 +567,8 @@ namespace BabyPhotoshop {
             this->Text = L"Baby Photoshop - FCAI";
             this->WindowState = System::Windows::Forms::FormWindowState::Maximized;
             this->MinimumSize = System::Drawing::Size(1020, 650);
+            this->KeyPreview = true;
+            this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MyForm::MyForm_KeyDown);
             this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &MyForm::MyForm_FormClosing);
 
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
@@ -729,6 +775,64 @@ namespace BabyPhotoshop {
                 }
                 else if (result == System::Windows::Forms::DialogResult::Cancel) {
                     e->Cancel = true; // User aborted exit
+                }
+            }
+        }
+
+        // =============================================
+        // KEYBOARD SHORTCUTS HANDLER
+        // =============================================
+        System::Void MyForm_KeyDown(System::Object^ sender, System::Windows::Forms::KeyEventArgs^ e) {
+            // Check for Ctrl key combinations
+            if (e->Control) {
+                if (e->KeyCode == Keys::O) {
+                    btnLoad_Click(btnLoad, EventArgs::Empty);
+                    e->Handled = true;
+                    e->SuppressKeyPress = true;
+                }
+                else if (e->KeyCode == Keys::S) {
+                    btnSave_Click(btnSave, EventArgs::Empty);
+                    e->Handled = true;
+                    e->SuppressKeyPress = true;
+                }
+                else if (e->KeyCode == Keys::Z) {
+                    if (e->Shift) {
+                        // Ctrl + Shift + Z = Redo
+                        if (btnForward->Enabled) {
+                            btnForward_Click(btnForward, EventArgs::Empty);
+                        } else {
+                            UpdateStatusTelemetry(L"No further redo actions available");
+                        }
+                    } else {
+                        // Ctrl + Z = Undo
+                        if (btnBackward->Enabled) {
+                            btnBackward_Click(btnBackward, EventArgs::Empty);
+                        } else {
+                            UpdateStatusTelemetry(L"No further undo actions available");
+                        }
+                    }
+                    e->Handled = true;
+                    e->SuppressKeyPress = true;
+                }
+                else if (e->KeyCode == Keys::Y) {
+                    // Ctrl + Y = Redo
+                    if (btnForward->Enabled) {
+                        btnForward_Click(btnForward, EventArgs::Empty);
+                    } else {
+                        UpdateStatusTelemetry(L"No further redo actions available");
+                    }
+                    e->Handled = true;
+                    e->SuppressKeyPress = true;
+                }
+            }
+            else if (e->KeyCode == Keys::Escape) {
+                if (cropInteractionMode) {
+                    cropInteractionMode = false;
+                    isSelectingCrop = false;
+                    pictureBox1->Cursor = Cursors::Default;
+                    pictureBox1->Invalidate();
+                    UpdateStatusTelemetry(L"Interactive Crop cancelled");
+                    e->Handled = true;
                 }
             }
         }
