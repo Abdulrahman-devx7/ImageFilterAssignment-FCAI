@@ -122,6 +122,7 @@ namespace BabyPhotoshop {
             cropStartY = 0;
             cropCurrentX = 0;
             cropCurrentY = 0;
+            isComparing = false;
             UpdateHistoryButtons();
             UpdateStatusTelemetry(L"Ready - Load or drop an image (Ctrl+O) to begin");
         }
@@ -149,12 +150,16 @@ namespace BabyPhotoshop {
         int cropCurrentX;
         int cropCurrentY;
 
+        // Before/After Compare tracking
+        bool isComparing;
+
         // UI Elements
         System::Windows::Forms::PictureBox^ pictureBox1;
         System::Windows::Forms::Button^ btnLoad;
         System::Windows::Forms::Button^ btnSave;
         System::Windows::Forms::Button^ btnBackward;
         System::Windows::Forms::Button^ btnForward;
+        System::Windows::Forms::Button^ btnCompare;
         System::Windows::Forms::FlowLayoutPanel^ filterPanel;
         System::Windows::Forms::Panel^ mainPanel;
 
@@ -198,6 +203,7 @@ namespace BabyPhotoshop {
             this->btnSave = (gcnew System::Windows::Forms::Button());
             this->btnBackward = (gcnew System::Windows::Forms::Button());
             this->btnForward = (gcnew System::Windows::Forms::Button());
+            this->btnCompare = (gcnew System::Windows::Forms::Button());
             this->filterPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
             this->mainPanel = (gcnew System::Windows::Forms::Panel());
 
@@ -326,6 +332,25 @@ namespace BabyPhotoshop {
             this->btnForward->Click += gcnew System::EventHandler(this, &MyForm::btnForward_Click);
             this->btnForward->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
             //
+            // btnCompare
+            //
+            this->btnCompare->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+            this->btnCompare->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnCompare->FlatAppearance->BorderSize = 0;
+            this->btnCompare->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(245, 158, 11);
+            this->btnCompare->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(180, 83, 9);
+            this->btnCompare->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+            this->btnCompare->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
+            this->btnCompare->Location = System::Drawing::Point(860, 555);
+            this->btnCompare->Name = L"btnCompare";
+            this->btnCompare->Size = System::Drawing::Size(145, 40);
+            this->btnCompare->TabIndex = 7;
+            this->btnCompare->Text = L"Compare (\\)";
+            this->btnCompare->UseVisualStyleBackColor = false;
+            this->btnCompare->Enabled = false;
+            this->btnCompare->Click += gcnew System::EventHandler(this, &MyForm::btnCompare_Click);
+            this->btnCompare->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
+            //
             // filterPanel
             //
             this->filterPanel->AutoScroll = true;
@@ -409,6 +434,7 @@ namespace BabyPhotoshop {
             this->toolTip1->SetToolTip(this->btnBackward, L"Undo / Backward (Ctrl+Z)\nRevert the most recent filter or edit");
             this->toolTip1->SetToolTip(this->btnForward, L"Redo / Forward (Ctrl+Y or Ctrl+Shift+Z)\nRe-apply the previously undone filter");
             this->toolTip1->SetToolTip(this->pictureBox1, L"Image Canvas\nDrop image files here to load directly");
+            this->toolTip1->SetToolTip(this->btnCompare, L"Before / After Compare (\\ or B)\nToggle between the original unedited image and your current edits");
 
             // Create all 18 buttons with names
             cli::array<String^>^ names = gcnew cli::array<String^> {
@@ -562,6 +588,7 @@ namespace BabyPhotoshop {
             this->Controls->Add(this->btnBackward);
             this->Controls->Add(this->btnForward);
             this->Controls->Add(this->pictureBox1);
+            this->Controls->Add(this->btnCompare);
             this->Controls->Add(this->statusStrip1);
             this->Name = L"MyForm";
             this->Text = L"Baby Photoshop - FCAI";
@@ -584,11 +611,11 @@ namespace BabyPhotoshop {
         // =============================================
         // THE BRIDGE: C++ pixels -> .NET Bitmap
         // =============================================
-        void UpdatePictureBox() {
-            if (currentImage->width <= 0 || currentImage->height <= 0) return;
+        void UpdatePictureBoxWithImage(::Image* img) {
+            if (img == nullptr || img->width <= 0 || img->height <= 0 || img->imageData == nullptr) return;
 
-            int w = currentImage->width;
-            int h = currentImage->height;
+            int w = img->width;
+            int h = img->height;
 
             Bitmap^ bmp = gcnew Bitmap(w, h, PixelFormat::Format24bppRgb);
             System::Drawing::Rectangle rect = System::Drawing::Rectangle(0, 0, w, h);
@@ -600,19 +627,69 @@ namespace BabyPhotoshop {
 
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
-                    int stbi_index = (y * w + x) * currentImage->channels;
+                    int stbi_index = (y * w + x) * img->channels;
                     int bmp_index = y * bmpData->Stride + x * 3;
 
                     // Bitmap expects BGR
-                    rgbValues[bmp_index + 2] = currentImage->imageData[stbi_index + 0]; // R
-                    rgbValues[bmp_index + 1] = currentImage->imageData[stbi_index + 1]; // G
-                    rgbValues[bmp_index + 0] = currentImage->imageData[stbi_index + 2]; // B
+                    rgbValues[bmp_index + 2] = img->imageData[stbi_index + 0]; // R
+                    rgbValues[bmp_index + 1] = img->imageData[stbi_index + 1]; // G
+                    rgbValues[bmp_index + 0] = img->imageData[stbi_index + 2]; // B
                 }
             }
 
             Marshal::Copy(rgbValues, 0, ptr, bytes);
             bmp->UnlockBits(bmpData);
             pictureBox1->Image = bmp;
+        }
+
+        void UpdatePictureBox() {
+            UpdatePictureBoxWithImage(currentImage);
+        }
+
+        // =============================================
+        // BEFORE / AFTER COMPARE SUPPORT
+        // =============================================
+        void ResetCompareMode() {
+            if (isComparing) {
+                isComparing = false;
+                if (btnCompare != nullptr && btnCompare->Enabled) {
+                    btnCompare->Text = L"Compare (\\)";
+                    btnCompare->BackColor = System::Drawing::Color::FromArgb(217, 119, 6);
+                }
+                this->statusLabelMsg->ForeColor = System::Drawing::Color::FromArgb(220, 220, 228);
+                UpdatePictureBox();
+                pictureBox1->Invalidate();
+            }
+        }
+
+        void ToggleComparePreview() {
+            if (history == nullptr || history->getHeadNode() == nullptr || history->getCurrentNode() == history->getHeadNode()) {
+                UpdateStatusTelemetry(L"No edits yet to compare with original");
+                return;
+            }
+
+            isComparing = !isComparing;
+
+            if (isComparing) {
+                // Show Original (Before)
+                btnCompare->Text = L"Viewing Before";
+                btnCompare->BackColor = System::Drawing::Color::FromArgb(180, 83, 9);
+                UpdatePictureBoxWithImage(&(history->getHeadNode()->image));
+                UpdateStatusTelemetry(L"Comparing: Showing Original (Before) - Press \\ or click again to return to Edited");
+                this->statusLabelMsg->ForeColor = System::Drawing::Color::FromArgb(255, 195, 80);
+            } else {
+                // Return to Edited (After)
+                btnCompare->Text = L"Compare (\\)";
+                btnCompare->BackColor = System::Drawing::Color::FromArgb(217, 119, 6);
+                UpdatePictureBox();
+                this->statusLabelMsg->ForeColor = System::Drawing::Color::FromArgb(220, 220, 228);
+                UpdateStatusTelemetry(L"Viewing Edited Image (After)");
+            }
+            pictureBox1->Invalidate();
+        }
+
+        System::Void btnCompare_Click(System::Object^ sender, System::EventArgs^ e) {
+            ToggleComparePreview();
         }
 
         // =============================================
@@ -628,6 +705,13 @@ namespace BabyPhotoshop {
                 btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
                 btnBackward->Cursor = System::Windows::Forms::Cursors::Default;
                 btnForward->Cursor = System::Windows::Forms::Cursors::Default;
+                if (btnCompare != nullptr) {
+                    btnCompare->Enabled = false;
+                    btnCompare->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                    btnCompare->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                    btnCompare->Cursor = System::Windows::Forms::Cursors::Default;
+                    btnCompare->Text = L"Compare (\\)";
+                }
                 return;
             }
 
@@ -655,6 +739,27 @@ namespace BabyPhotoshop {
                 btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
                 btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
                 btnForward->Cursor = System::Windows::Forms::Cursors::Default;
+            }
+
+            if (btnCompare != nullptr) {
+                bool canCompare = (history != nullptr && history->getHeadNode() != nullptr && history->getCurrentNode() != history->getHeadNode());
+                btnCompare->Enabled = canCompare;
+                if (!canCompare) {
+                    if (isComparing) {
+                        isComparing = false;
+                        UpdatePictureBox();
+                        pictureBox1->Invalidate();
+                    }
+                    btnCompare->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+                    btnCompare->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                    btnCompare->Cursor = System::Windows::Forms::Cursors::Default;
+                    btnCompare->Text = L"Compare (\\)";
+                } else if (!isComparing) {
+                    btnCompare->BackColor = System::Drawing::Color::FromArgb(217, 119, 6);
+                    btnCompare->ForeColor = System::Drawing::Color::White;
+                    btnCompare->Cursor = System::Windows::Forms::Cursors::Hand;
+                    btnCompare->Text = L"Compare (\\)";
+                }
             }
         }
 
@@ -692,6 +797,7 @@ namespace BabyPhotoshop {
         }
 
         void RecordHistory(String^ actionName) {
+            ResetCompareMode();
             if (history != nullptr && currentImage != nullptr && currentImage->imageData != nullptr) {
                 std::string name = msclr::interop::marshal_as<std::string>(actionName);
                 history->newImage(*currentImage, name);
@@ -701,6 +807,7 @@ namespace BabyPhotoshop {
         }
 
         System::Void btnBackward_Click(System::Object^ sender, System::EventArgs^ e) {
+            ResetCompareMode();
             if (history != nullptr && history->canBackward()) {
                 Node prevNode = history->backward(1);
                 *currentImage = prevNode.image;
@@ -715,6 +822,7 @@ namespace BabyPhotoshop {
         }
 
         System::Void btnForward_Click(System::Object^ sender, System::EventArgs^ e) {
+            ResetCompareMode();
             if (history != nullptr && history->canForward()) {
                 Node nextNode = history->forward(1);
                 *currentImage = nextNode.image;
@@ -741,6 +849,7 @@ namespace BabyPhotoshop {
         // LOAD & SAVE & EXIT HANDLERS
         // =============================================
         bool PromptAndSaveImage() {
+            ResetCompareMode();
             if (!CheckImageLoaded()) return false;
             SaveFileDialog^ sfd = gcnew SaveFileDialog();
             sfd->Filter = "JPG Image|*.jpg|PNG Image|*.png|BMP Image|*.bmp|TGA Image|*.tga";
@@ -760,6 +869,7 @@ namespace BabyPhotoshop {
         }
 
         System::Void MyForm_FormClosing(System::Object^ sender, System::Windows::Forms::FormClosingEventArgs^ e) {
+            ResetCompareMode();
             if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
                 System::Windows::Forms::DialogResult result = MessageBox::Show(
                     "Would you like to save the current image before exiting?",
@@ -824,9 +934,29 @@ namespace BabyPhotoshop {
                     e->Handled = true;
                     e->SuppressKeyPress = true;
                 }
+                else if (e->KeyCode == Keys::B) {
+                    // Ctrl + B = Compare toggle
+                    if (btnCompare != nullptr && btnCompare->Enabled) {
+                        ToggleComparePreview();
+                        e->Handled = true;
+                        e->SuppressKeyPress = true;
+                    }
+                }
+            }
+            else if (e->KeyCode == Keys::OemBackslash || e->KeyCode == Keys::B) {
+                // \ or B = Compare toggle
+                if (btnCompare != nullptr && btnCompare->Enabled) {
+                    ToggleComparePreview();
+                    e->Handled = true;
+                    e->SuppressKeyPress = true;
+                }
             }
             else if (e->KeyCode == Keys::Escape) {
-                if (cropInteractionMode) {
+                if (isComparing) {
+                    ResetCompareMode();
+                    e->Handled = true;
+                }
+                else if (cropInteractionMode) {
                     cropInteractionMode = false;
                     isSelectingCrop = false;
                     pictureBox1->Cursor = Cursors::Default;
@@ -838,6 +968,7 @@ namespace BabyPhotoshop {
         }
 
         void LoadImageFile(String^ filename) {
+            ResetCompareMode();
             std::string filepath = msclr::interop::marshal_as<std::string>(filename);
             try {
                 currentImage->loadNewImage(filepath);
@@ -1292,9 +1423,38 @@ namespace BabyPhotoshop {
                     delete brush;
                 }
             }
+
+            // 3. Draw Before/After Compare badge when active
+            if (isComparing && currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
+                int pbW = pictureBox1->ClientSize.Width;
+                int badgeW = 190;
+                int badgeH = 32;
+                int badgeX = pbW - badgeW - 14;
+                int badgeY = 14;
+
+                System::Drawing::SolidBrush^ bgBrush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(220, 24, 24, 28));
+                System::Drawing::Pen^ borderPen = gcnew System::Drawing::Pen(System::Drawing::Color::FromArgb(217, 119, 6), 2.0f);
+                e->Graphics->FillRectangle(bgBrush, badgeX, badgeY, badgeW, badgeH);
+                e->Graphics->DrawRectangle(borderPen, badgeX, badgeY, badgeW, badgeH);
+
+                System::Drawing::Font^ badgeFont = gcnew System::Drawing::Font(L"Segoe UI", 9.5f, System::Drawing::FontStyle::Bold);
+                System::Drawing::SolidBrush^ textBrush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(245, 158, 11));
+                System::Drawing::StringFormat^ sf = gcnew System::Drawing::StringFormat();
+                sf->Alignment = System::Drawing::StringAlignment::Center;
+                sf->LineAlignment = System::Drawing::StringAlignment::Center;
+
+                e->Graphics->DrawString(L"BEFORE (ORIGINAL)", badgeFont, textBrush, System::Drawing::RectangleF((float)badgeX, (float)badgeY, (float)badgeW, (float)badgeH), sf);
+
+                delete bgBrush;
+                delete borderPen;
+                delete badgeFont;
+                delete textBrush;
+                delete sf;
+            }
         }
 
         System::Void btn11_Click(System::Object^ sender, System::EventArgs^ e) {
+            ResetCompareMode();
             if (!CheckImageLoaded()) return;
 
             System::Windows::Forms::DialogResult choice = MessageBox::Show(
