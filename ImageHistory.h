@@ -108,6 +108,11 @@ public:
         return current;
     }
 
+    Node* getHeadNode() const
+    {
+        return head;
+    }
+
     int getUndoCount() const
     {
         int count = 0;
