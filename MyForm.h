@@ -90,6 +90,24 @@ namespace BabyPhotoshop {
         }
     };
 
+    public ref class DarkStatusStripRenderer : public System::Windows::Forms::ToolStripProfessionalRenderer
+    {
+    protected:
+        virtual void OnRenderToolStripBackground(System::Windows::Forms::ToolStripRenderEventArgs^ e) override
+        {
+            System::Drawing::SolidBrush^ brush = gcnew System::Drawing::SolidBrush(e->ToolStrip->BackColor);
+            e->Graphics->FillRectangle(brush, e->AffectedBounds);
+            delete brush;
+        }
+
+        virtual void OnRenderToolStripBorder(System::Windows::Forms::ToolStripRenderEventArgs^ e) override
+        {
+            System::Drawing::Pen^ pen = gcnew System::Drawing::Pen(System::Drawing::Color::FromArgb(45, 45, 52), 1.0f);
+            e->Graphics->DrawLine(pen, 0, 0, e->ToolStrip->Width, 0);
+            delete pen;
+        }
+    };
+
     public ref class MyForm : public System::Windows::Forms::Form
     {
     public:
@@ -105,6 +123,7 @@ namespace BabyPhotoshop {
             cropCurrentX = 0;
             cropCurrentY = 0;
             UpdateHistoryButtons();
+            UpdateStatusTelemetry(L"Ready - Load or drop an image to begin");
         }
 
     protected:
@@ -139,6 +158,13 @@ namespace BabyPhotoshop {
         System::Windows::Forms::FlowLayoutPanel^ filterPanel;
         System::Windows::Forms::Panel^ mainPanel;
 
+        // Status Bar & Telemetry Controls
+        System::Windows::Forms::StatusStrip^ statusStrip1;
+        System::Windows::Forms::ToolStripStatusLabel^ statusLabelMsg;
+        System::Windows::Forms::ToolStripStatusLabel^ statusLabelDim;
+        System::Windows::Forms::ToolStripStatusLabel^ statusLabelChannels;
+        System::Windows::Forms::ToolStripStatusLabel^ statusLabelHistory;
+
         // All 18 filter buttons
         System::Windows::Forms::Button^ btn1;
         System::Windows::Forms::Button^ btn2;
@@ -172,6 +198,12 @@ namespace BabyPhotoshop {
             this->filterPanel = (gcnew System::Windows::Forms::FlowLayoutPanel());
             this->mainPanel = (gcnew System::Windows::Forms::Panel());
 
+            this->statusStrip1 = (gcnew System::Windows::Forms::StatusStrip());
+            this->statusLabelMsg = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+            this->statusLabelDim = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+            this->statusLabelChannels = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+            this->statusLabelHistory = (gcnew System::Windows::Forms::ToolStripStatusLabel());
+
             this->btn1 = (gcnew System::Windows::Forms::Button());
             this->btn2 = (gcnew System::Windows::Forms::Button());
             this->btn3 = (gcnew System::Windows::Forms::Button());
@@ -193,6 +225,7 @@ namespace BabyPhotoshop {
 
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
             this->filterPanel->SuspendLayout();
+            this->statusStrip1->SuspendLayout();
             this->SuspendLayout();
 
             //
@@ -201,7 +234,7 @@ namespace BabyPhotoshop {
             this->pictureBox1->BackColor = System::Drawing::Color::FromArgb(34, 34, 38);
             this->pictureBox1->Location = System::Drawing::Point(270, 10);
             this->pictureBox1->Name = L"pictureBox1";
-            this->pictureBox1->Size = System::Drawing::Size(760, 540);
+            this->pictureBox1->Size = System::Drawing::Size(740, 535);
             this->pictureBox1->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
             this->pictureBox1->TabIndex = 0;
             this->pictureBox1->TabStop = false;
@@ -224,7 +257,7 @@ namespace BabyPhotoshop {
             this->btnLoad->Cursor = System::Windows::Forms::Cursors::Hand;
             this->btnLoad->ForeColor = System::Drawing::Color::White;
             this->btnLoad->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
-            this->btnLoad->Location = System::Drawing::Point(280, 560);
+            this->btnLoad->Location = System::Drawing::Point(280, 555);
             this->btnLoad->Name = L"btnLoad";
             this->btnLoad->Size = System::Drawing::Size(120, 40);
             this->btnLoad->TabIndex = 1;
@@ -243,7 +276,7 @@ namespace BabyPhotoshop {
             this->btnSave->Cursor = System::Windows::Forms::Cursors::Hand;
             this->btnSave->ForeColor = System::Drawing::Color::White;
             this->btnSave->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
-            this->btnSave->Location = System::Drawing::Point(415, 560);
+            this->btnSave->Location = System::Drawing::Point(415, 555);
             this->btnSave->Name = L"btnSave";
             this->btnSave->Size = System::Drawing::Size(120, 40);
             this->btnSave->TabIndex = 2;
@@ -261,7 +294,7 @@ namespace BabyPhotoshop {
             this->btnBackward->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(75, 50, 120);
             this->btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
             this->btnBackward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
-            this->btnBackward->Location = System::Drawing::Point(550, 560);
+            this->btnBackward->Location = System::Drawing::Point(550, 555);
             this->btnBackward->Name = L"btnBackward";
             this->btnBackward->Size = System::Drawing::Size(140, 40);
             this->btnBackward->TabIndex = 4;
@@ -280,7 +313,7 @@ namespace BabyPhotoshop {
             this->btnForward->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(75, 50, 120);
             this->btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
             this->btnForward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
-            this->btnForward->Location = System::Drawing::Point(705, 560);
+            this->btnForward->Location = System::Drawing::Point(705, 555);
             this->btnForward->Name = L"btnForward";
             this->btnForward->Size = System::Drawing::Size(140, 40);
             this->btnForward->TabIndex = 5;
@@ -297,9 +330,63 @@ namespace BabyPhotoshop {
             this->filterPanel->WrapContents = false;
             this->filterPanel->Location = System::Drawing::Point(5, 10);
             this->filterPanel->Name = L"filterPanel";
-            this->filterPanel->Size = System::Drawing::Size(255, 590);
+            this->filterPanel->Size = System::Drawing::Size(255, 595);
             this->filterPanel->TabIndex = 3;
             this->filterPanel->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left);
+            //
+            // statusStrip1
+            //
+            this->statusStrip1->BackColor = System::Drawing::Color::FromArgb(22, 22, 26);
+            this->statusStrip1->ForeColor = System::Drawing::Color::FromArgb(190, 190, 198);
+            this->statusStrip1->Font = (gcnew System::Drawing::Font(L"Segoe UI", 9.0f));
+            this->statusStrip1->SizingGrip = false;
+            this->statusStrip1->Renderer = gcnew DarkStatusStripRenderer();
+            this->statusStrip1->Items->AddRange(gcnew cli::array<System::Windows::Forms::ToolStripItem^> {
+                this->statusLabelMsg,
+                this->statusLabelDim,
+                this->statusLabelChannels,
+                this->statusLabelHistory
+            });
+            this->statusStrip1->Location = System::Drawing::Point(0, 614);
+            this->statusStrip1->Name = L"statusStrip1";
+            this->statusStrip1->Size = System::Drawing::Size(1020, 26);
+            this->statusStrip1->TabIndex = 6;
+            this->statusStrip1->Text = L"statusStrip1";
+            //
+            // statusLabelMsg
+            //
+            this->statusLabelMsg->Name = L"statusLabelMsg";
+            this->statusLabelMsg->Spring = true;
+            this->statusLabelMsg->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
+            this->statusLabelMsg->Text = L"Ready - Load or drop an image to begin";
+            this->statusLabelMsg->ForeColor = System::Drawing::Color::FromArgb(220, 220, 228);
+            //
+            // statusLabelDim
+            //
+            this->statusLabelDim->Name = L"statusLabelDim";
+            this->statusLabelDim->BorderSides = static_cast<System::Windows::Forms::ToolStripStatusLabelBorderSides>(System::Windows::Forms::ToolStripStatusLabelBorderSides::Left);
+            this->statusLabelDim->BorderStyle = System::Windows::Forms::Border3DStyle::Etched;
+            this->statusLabelDim->Padding = System::Windows::Forms::Padding(8, 0, 8, 0);
+            this->statusLabelDim->Text = L"-- x -- px";
+            this->statusLabelDim->ForeColor = System::Drawing::Color::FromArgb(0, 185, 255);
+            //
+            // statusLabelChannels
+            //
+            this->statusLabelChannels->Name = L"statusLabelChannels";
+            this->statusLabelChannels->BorderSides = static_cast<System::Windows::Forms::ToolStripStatusLabelBorderSides>(System::Windows::Forms::ToolStripStatusLabelBorderSides::Left);
+            this->statusLabelChannels->BorderStyle = System::Windows::Forms::Border3DStyle::Etched;
+            this->statusLabelChannels->Padding = System::Windows::Forms::Padding(8, 0, 8, 0);
+            this->statusLabelChannels->Text = L"-- Channels";
+            this->statusLabelChannels->ForeColor = System::Drawing::Color::FromArgb(160, 215, 130);
+            //
+            // statusLabelHistory
+            //
+            this->statusLabelHistory->Name = L"statusLabelHistory";
+            this->statusLabelHistory->BorderSides = static_cast<System::Windows::Forms::ToolStripStatusLabelBorderSides>(System::Windows::Forms::ToolStripStatusLabelBorderSides::Left);
+            this->statusLabelHistory->BorderStyle = System::Windows::Forms::Border3DStyle::Etched;
+            this->statusLabelHistory->Padding = System::Windows::Forms::Padding(8, 0, 8, 0);
+            this->statusLabelHistory->Text = L"History: Idle";
+            this->statusLabelHistory->ForeColor = System::Drawing::Color::FromArgb(210, 175, 255);
 
             // Create all 18 buttons with names
             cli::array<String^>^ names = gcnew cli::array<String^> {
@@ -424,22 +511,26 @@ namespace BabyPhotoshop {
             this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->BackColor = System::Drawing::Color::FromArgb(30, 30, 30);
-            this->ClientSize = System::Drawing::Size(1000, 610);
+            this->ClientSize = System::Drawing::Size(1020, 640);
             this->Controls->Add(this->filterPanel);
             this->Controls->Add(this->btnSave);
             this->Controls->Add(this->btnLoad);
             this->Controls->Add(this->btnBackward);
             this->Controls->Add(this->btnForward);
             this->Controls->Add(this->pictureBox1);
+            this->Controls->Add(this->statusStrip1);
             this->Name = L"MyForm";
             this->Text = L"Baby Photoshop - FCAI";
             this->WindowState = System::Windows::Forms::FormWindowState::Maximized;
-            this->MinimumSize = System::Drawing::Size(1000, 650);
+            this->MinimumSize = System::Drawing::Size(1020, 650);
             this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &MyForm::MyForm_FormClosing);
 
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->EndInit();
             this->filterPanel->ResumeLayout(false);
+            this->statusStrip1->ResumeLayout(false);
+            this->statusStrip1->PerformLayout();
             this->ResumeLayout(false);
+            this->PerformLayout();
         }
 #pragma endregion
 
@@ -521,11 +612,45 @@ namespace BabyPhotoshop {
             }
         }
 
+        // =============================================
+        // STATUS TELEMETRY HELPER
+        // =============================================
+        void UpdateStatusTelemetry(String^ customMsg) {
+            if (this->statusLabelMsg == nullptr) return;
+
+            if (!String::IsNullOrEmpty(customMsg)) {
+                this->statusLabelMsg->Text = customMsg;
+            }
+
+            if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
+                this->statusLabelDim->Text = String::Format(L"{0} x {1} px", currentImage->width, currentImage->height);
+                String^ chText = (currentImage->channels == 1) ? L"1 Channel (Grayscale)" :
+                                 (currentImage->channels == 3) ? L"3 Channels (RGB)" :
+                                 (currentImage->channels == 4) ? L"4 Channels (RGBA)" :
+                                 String::Format(L"{0} Channels", currentImage->channels);
+                this->statusLabelChannels->Text = chText;
+            } else {
+                this->statusLabelDim->Text = L"-- x -- px";
+                this->statusLabelChannels->Text = L"-- Channels";
+            }
+
+            if (history != nullptr && history->getCurrentNode() != nullptr) {
+                int curIdx = history->getCurrentIndex();
+                int total = history->getTotalCount();
+                int undos = history->getUndoCount();
+                int redos = history->getRedoCount();
+                this->statusLabelHistory->Text = String::Format(L"History: {0}/{1} (Undo: {2}, Redo: {3})", curIdx, total, undos, redos);
+            } else {
+                this->statusLabelHistory->Text = L"History: Idle";
+            }
+        }
+
         void RecordHistory(String^ actionName) {
             if (history != nullptr && currentImage != nullptr && currentImage->imageData != nullptr) {
                 std::string name = msclr::interop::marshal_as<std::string>(actionName);
                 history->newImage(*currentImage, name);
                 UpdateHistoryButtons();
+                UpdateStatusTelemetry(String::Format(L"Applied: {0}", actionName));
             }
         }
 
@@ -535,6 +660,11 @@ namespace BabyPhotoshop {
                 *currentImage = prevNode.image;
                 UpdatePictureBox();
                 UpdateHistoryButtons();
+                String^ action = gcnew String(prevNode.imageName.c_str());
+                if (action->Contains(L"\\") || action->Contains(L"/")) {
+                    action = System::IO::Path::GetFileName(action);
+                }
+                UpdateStatusTelemetry(String::Format(L"Undo: Reverted to \"{0}\"", action));
             }
         }
 
@@ -544,6 +674,11 @@ namespace BabyPhotoshop {
                 *currentImage = nextNode.image;
                 UpdatePictureBox();
                 UpdateHistoryButtons();
+                String^ action = gcnew String(nextNode.imageName.c_str());
+                if (action->Contains(L"\\") || action->Contains(L"/")) {
+                    action = System::IO::Path::GetFileName(action);
+                }
+                UpdateStatusTelemetry(String::Format(L"Redo: Advanced to \"{0}\"", action));
             }
         }
 
@@ -567,6 +702,7 @@ namespace BabyPhotoshop {
                 std::string filepath = msclr::interop::marshal_as<std::string>(sfd->FileName);
                 try {
                     currentImage->saveImage(filepath);
+                    UpdateStatusTelemetry(String::Format(L"Saved: {0}", System::IO::Path::GetFileName(sfd->FileName)));
                     MessageBox::Show("Image saved successfully!", "Success", MessageBoxButtons::OK, MessageBoxIcon::Information);
                     return true;
                 } catch (...) {
@@ -609,6 +745,7 @@ namespace BabyPhotoshop {
                 UpdatePictureBox();
                 UpdateHistoryButtons();
                 pictureBox1->Invalidate();
+                UpdateStatusTelemetry(String::Format(L"Loaded: {0}", System::IO::Path::GetFileName(filename)));
             } catch (...) {
                 MessageBox::Show("Failed to load image!", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
             }
@@ -1067,6 +1204,7 @@ namespace BabyPhotoshop {
             if (choice == System::Windows::Forms::DialogResult::Yes) {
                 cropInteractionMode = true;
                 pictureBox1->Cursor = Cursors::Cross;
+                UpdateStatusTelemetry(L"Interactive Crop: Drag a selection box over the image");
                 MessageBox::Show("Click and drag over the image to select the crop box, then release your mouse.", "Interactive Crop", MessageBoxButtons::OK, MessageBoxIcon::Information);
                 return;
             }
