@@ -339,22 +339,84 @@ namespace BabyPhotoshop {
             };
 
             for (int i = 0; i < 18; i++) {
-                btns[i]->Size = System::Drawing::Size(240, 44);
+                btns[i]->Size = System::Drawing::Size(232, 42);
                 btns[i]->Text = names[i];
                 btns[i]->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
                 btns[i]->FlatAppearance->BorderSize = 0;
-                btns[i]->BackColor = System::Drawing::Color::FromArgb(48, 48, 54);
-                btns[i]->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(68, 68, 76);
+                btns[i]->BackColor = System::Drawing::Color::FromArgb(46, 46, 52);
+                btns[i]->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(65, 65, 74);
                 btns[i]->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(0, 122, 204);
                 btns[i]->ForeColor = System::Drawing::Color::White;
-                btns[i]->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10.5f, System::Drawing::FontStyle::Bold));
+                btns[i]->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10.0f, System::Drawing::FontStyle::Bold));
                 btns[i]->TextAlign = ContentAlignment::MiddleLeft;
                 btns[i]->Padding = System::Windows::Forms::Padding(10, 0, 0, 0);
-                btns[i]->Margin = System::Windows::Forms::Padding(3, 2, 3, 2);
+                btns[i]->Margin = System::Windows::Forms::Padding(2, 2, 2, 2);
                 btns[i]->Cursor = System::Windows::Forms::Cursors::Hand;
                 btns[i]->Click += handlers[i];
-                this->filterPanel->Controls->Add(btns[i]);
             }
+
+            // Category Headers (Clean ASCII, styled with electric blue accent)
+            Label^ header1 = gcnew Label();
+            header1->Text = L"  ESSENTIAL ADJUSTMENTS";
+            header1->Size = System::Drawing::Size(232, 26);
+            header1->ForeColor = System::Drawing::Color::FromArgb(0, 165, 255);
+            header1->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.5f, System::Drawing::FontStyle::Bold));
+            header1->TextAlign = ContentAlignment::MiddleLeft;
+            header1->Margin = System::Windows::Forms::Padding(2, 4, 2, 2);
+
+            Label^ header2 = gcnew Label();
+            header2->Text = L"  GEOMETRY & TRANSFORM";
+            header2->Size = System::Drawing::Size(232, 26);
+            header2->ForeColor = System::Drawing::Color::FromArgb(0, 165, 255);
+            header2->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.5f, System::Drawing::FontStyle::Bold));
+            header2->TextAlign = ContentAlignment::MiddleLeft;
+            header2->Margin = System::Windows::Forms::Padding(2, 14, 2, 2);
+
+            Label^ header3 = gcnew Label();
+            header3->Text = L"  ARTISTIC & STYLIZED";
+            header3->Size = System::Drawing::Size(232, 26);
+            header3->ForeColor = System::Drawing::Color::FromArgb(0, 165, 255);
+            header3->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.5f, System::Drawing::FontStyle::Bold));
+            header3->TextAlign = ContentAlignment::MiddleLeft;
+            header3->Margin = System::Windows::Forms::Padding(2, 14, 2, 2);
+
+            Label^ header4 = gcnew Label();
+            header4->Text = L"  COLOR & COMPOSITION";
+            header4->Size = System::Drawing::Size(232, 26);
+            header4->ForeColor = System::Drawing::Color::FromArgb(0, 165, 255);
+            header4->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.5f, System::Drawing::FontStyle::Bold));
+            header4->TextAlign = ContentAlignment::MiddleLeft;
+            header4->Margin = System::Windows::Forms::Padding(2, 14, 2, 2);
+
+            // Section 1: Essential Adjustments (Filters 1, 2, 3, 7)
+            this->filterPanel->Controls->Add(header1);
+            this->filterPanel->Controls->Add(btn1);
+            this->filterPanel->Controls->Add(btn2);
+            this->filterPanel->Controls->Add(btn3);
+            this->filterPanel->Controls->Add(btn7);
+
+            // Section 2: Geometry & Transform (Filters 5, 6, 8, 11, 17)
+            this->filterPanel->Controls->Add(header2);
+            this->filterPanel->Controls->Add(btn5);
+            this->filterPanel->Controls->Add(btn6);
+            this->filterPanel->Controls->Add(btn8);
+            this->filterPanel->Controls->Add(btn11);
+            this->filterPanel->Controls->Add(btn17);
+
+            // Section 3: Artistic & Stylized (Filters 10, 12, 14, 18)
+            this->filterPanel->Controls->Add(header3);
+            this->filterPanel->Controls->Add(btn10);
+            this->filterPanel->Controls->Add(btn12);
+            this->filterPanel->Controls->Add(btn14);
+            this->filterPanel->Controls->Add(btn18);
+
+            // Section 4: Color & Composition (Filters 4, 9, 13, 15, 16)
+            this->filterPanel->Controls->Add(header4);
+            this->filterPanel->Controls->Add(btn4);
+            this->filterPanel->Controls->Add(btn9);
+            this->filterPanel->Controls->Add(btn13);
+            this->filterPanel->Controls->Add(btn15);
+            this->filterPanel->Controls->Add(btn16);
 
             //
             // MyForm
