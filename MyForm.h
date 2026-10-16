@@ -198,7 +198,7 @@ namespace BabyPhotoshop {
             //
             // pictureBox1
             //
-            this->pictureBox1->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
+            this->pictureBox1->BackColor = System::Drawing::Color::FromArgb(34, 34, 38);
             this->pictureBox1->Location = System::Drawing::Point(270, 10);
             this->pictureBox1->Name = L"pictureBox1";
             this->pictureBox1->Size = System::Drawing::Size(760, 540);
@@ -206,17 +206,24 @@ namespace BabyPhotoshop {
             this->pictureBox1->TabIndex = 0;
             this->pictureBox1->TabStop = false;
             this->pictureBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left | System::Windows::Forms::AnchorStyles::Right);
+            this->pictureBox1->AllowDrop = true;
             this->pictureBox1->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseDown);
             this->pictureBox1->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseMove);
             this->pictureBox1->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &MyForm::pictureBox1_MouseUp);
             this->pictureBox1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &MyForm::pictureBox1_Paint);
+            this->pictureBox1->DragEnter += gcnew System::Windows::Forms::DragEventHandler(this, &MyForm::pictureBox1_DragEnter);
+            this->pictureBox1->DragDrop += gcnew System::Windows::Forms::DragEventHandler(this, &MyForm::pictureBox1_DragDrop);
             //
             // btnLoad
             //
             this->btnLoad->BackColor = System::Drawing::Color::FromArgb(0, 122, 204);
             this->btnLoad->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnLoad->FlatAppearance->BorderSize = 0;
+            this->btnLoad->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(28, 151, 234);
+            this->btnLoad->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(0, 102, 174);
+            this->btnLoad->Cursor = System::Windows::Forms::Cursors::Hand;
             this->btnLoad->ForeColor = System::Drawing::Color::White;
-            this->btnLoad->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
+            this->btnLoad->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
             this->btnLoad->Location = System::Drawing::Point(280, 560);
             this->btnLoad->Name = L"btnLoad";
             this->btnLoad->Size = System::Drawing::Size(120, 40);
@@ -230,8 +237,12 @@ namespace BabyPhotoshop {
             //
             this->btnSave->BackColor = System::Drawing::Color::FromArgb(30, 130, 76);
             this->btnSave->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnSave->FlatAppearance->BorderSize = 0;
+            this->btnSave->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(40, 167, 98);
+            this->btnSave->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(24, 106, 62);
+            this->btnSave->Cursor = System::Windows::Forms::Cursors::Hand;
             this->btnSave->ForeColor = System::Drawing::Color::White;
-            this->btnSave->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
+            this->btnSave->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
             this->btnSave->Location = System::Drawing::Point(415, 560);
             this->btnSave->Name = L"btnSave";
             this->btnSave->Size = System::Drawing::Size(120, 40);
@@ -245,6 +256,9 @@ namespace BabyPhotoshop {
             //
             this->btnBackward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
             this->btnBackward->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnBackward->FlatAppearance->BorderSize = 0;
+            this->btnBackward->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(115, 85, 175);
+            this->btnBackward->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(75, 50, 120);
             this->btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
             this->btnBackward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
             this->btnBackward->Location = System::Drawing::Point(550, 560);
@@ -261,6 +275,9 @@ namespace BabyPhotoshop {
             //
             this->btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
             this->btnForward->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+            this->btnForward->FlatAppearance->BorderSize = 0;
+            this->btnForward->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(115, 85, 175);
+            this->btnForward->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(75, 50, 120);
             this->btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
             this->btnForward->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10, System::Drawing::FontStyle::Bold));
             this->btnForward->Location = System::Drawing::Point(705, 560);
@@ -322,14 +339,19 @@ namespace BabyPhotoshop {
             };
 
             for (int i = 0; i < 18; i++) {
-                btns[i]->Size = System::Drawing::Size(240, 45);
+                btns[i]->Size = System::Drawing::Size(240, 44);
                 btns[i]->Text = names[i];
                 btns[i]->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-                btns[i]->BackColor = System::Drawing::Color::FromArgb(60, 60, 65);
+                btns[i]->FlatAppearance->BorderSize = 0;
+                btns[i]->BackColor = System::Drawing::Color::FromArgb(48, 48, 54);
+                btns[i]->FlatAppearance->MouseOverBackColor = System::Drawing::Color::FromArgb(68, 68, 76);
+                btns[i]->FlatAppearance->MouseDownBackColor = System::Drawing::Color::FromArgb(0, 122, 204);
                 btns[i]->ForeColor = System::Drawing::Color::White;
-                btns[i]->Font = (gcnew System::Drawing::Font(L"Segoe UI", 11, System::Drawing::FontStyle::Bold));
+                btns[i]->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10.5f, System::Drawing::FontStyle::Bold));
                 btns[i]->TextAlign = ContentAlignment::MiddleLeft;
-                btns[i]->Margin = System::Windows::Forms::Padding(3);
+                btns[i]->Padding = System::Windows::Forms::Padding(10, 0, 0, 0);
+                btns[i]->Margin = System::Windows::Forms::Padding(3, 2, 3, 2);
+                btns[i]->Cursor = System::Windows::Forms::Cursors::Hand;
                 btns[i]->Click += handlers[i];
                 this->filterPanel->Controls->Add(btns[i]);
             }
@@ -405,6 +427,8 @@ namespace BabyPhotoshop {
                 btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
                 btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
                 btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                btnBackward->Cursor = System::Windows::Forms::Cursors::Default;
+                btnForward->Cursor = System::Windows::Forms::Cursors::Default;
                 return;
             }
 
@@ -417,17 +441,21 @@ namespace BabyPhotoshop {
             if (canBack) {
                 btnBackward->BackColor = System::Drawing::Color::FromArgb(90, 65, 140);
                 btnBackward->ForeColor = System::Drawing::Color::White;
+                btnBackward->Cursor = System::Windows::Forms::Cursors::Hand;
             } else {
                 btnBackward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
                 btnBackward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                btnBackward->Cursor = System::Windows::Forms::Cursors::Default;
             }
 
             if (canFwd) {
                 btnForward->BackColor = System::Drawing::Color::FromArgb(90, 65, 140);
                 btnForward->ForeColor = System::Drawing::Color::White;
+                btnForward->Cursor = System::Windows::Forms::Cursors::Hand;
             } else {
                 btnForward->BackColor = System::Drawing::Color::FromArgb(45, 45, 48);
                 btnForward->ForeColor = System::Drawing::Color::FromArgb(100, 100, 100);
+                btnForward->Cursor = System::Windows::Forms::Cursors::Default;
             }
         }
 
@@ -507,6 +535,61 @@ namespace BabyPhotoshop {
             }
         }
 
+        void LoadImageFile(String^ filename) {
+            std::string filepath = msclr::interop::marshal_as<std::string>(filename);
+            try {
+                currentImage->loadNewImage(filepath);
+                if (history != nullptr) {
+                    delete history;
+                    history = nullptr;
+                }
+                history = new ImageHistory(*currentImage, filepath);
+                UpdatePictureBox();
+                UpdateHistoryButtons();
+                pictureBox1->Invalidate();
+            } catch (...) {
+                MessageBox::Show("Failed to load image!", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+            }
+        }
+
+        System::Void pictureBox1_DragEnter(System::Object^ sender, System::Windows::Forms::DragEventArgs^ e) {
+            if (e->Data->GetDataPresent(DataFormats::FileDrop)) {
+                e->Effect = DragDropEffects::Copy;
+            } else {
+                e->Effect = DragDropEffects::None;
+            }
+        }
+
+        System::Void pictureBox1_DragDrop(System::Object^ sender, System::Windows::Forms::DragEventArgs^ e) {
+            if (e->Data->GetDataPresent(DataFormats::FileDrop)) {
+                cli::array<String^>^ files = (cli::array<String^>^)e->Data->GetData(DataFormats::FileDrop);
+                if (files != nullptr && files->Length > 0) {
+                    String^ droppedFile = files[0];
+                    String^ ext = System::IO::Path::GetExtension(droppedFile)->ToLower();
+                    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".tga") {
+                        if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
+                            System::Windows::Forms::DialogResult res = MessageBox::Show(
+                                "Would you like to save the current image before loading a new one?",
+                                "Save Current Image",
+                                MessageBoxButtons::YesNoCancel,
+                                MessageBoxIcon::Question);
+
+                            if (res == System::Windows::Forms::DialogResult::Yes) {
+                                bool saved = PromptAndSaveImage();
+                                if (!saved) return;
+                            }
+                            else if (res == System::Windows::Forms::DialogResult::Cancel) {
+                                return;
+                            }
+                        }
+                        LoadImageFile(droppedFile);
+                    } else {
+                        MessageBox::Show("Please drop a valid image file (.jpg, .png, .bmp, .tga).", "Unsupported Format", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+                    }
+                }
+            }
+        }
+
         System::Void btnLoad_Click(System::Object^ sender, System::EventArgs^ e) {
             if (currentImage != nullptr && currentImage->imageData != nullptr && currentImage->width > 0) {
                 System::Windows::Forms::DialogResult res = MessageBox::Show(
@@ -527,19 +610,7 @@ namespace BabyPhotoshop {
             OpenFileDialog^ ofd = gcnew OpenFileDialog();
             ofd->Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.tga";
             if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-                std::string filepath = msclr::interop::marshal_as<std::string>(ofd->FileName);
-                try {
-                    currentImage->loadNewImage(filepath);
-                    if (history != nullptr) {
-                        delete history;
-                        history = nullptr;
-                    }
-                    history = new ImageHistory(*currentImage, filepath);
-                    UpdatePictureBox();
-                    UpdateHistoryButtons();
-                } catch (...) {
-                    MessageBox::Show("Failed to load image!", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
-                }
+                LoadImageFile(ofd->FileName);
             }
         }
 
@@ -856,6 +927,50 @@ namespace BabyPhotoshop {
         }
 
         System::Void pictureBox1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+            // 1. Draw empty-state screen if no image is currently loaded
+            if (currentImage == nullptr || currentImage->imageData == nullptr || currentImage->width <= 0) {
+                int pbW = pictureBox1->ClientSize.Width;
+                int pbH = pictureBox1->ClientSize.Height;
+                if (pbW > 60 && pbH > 60) {
+                    e->Graphics->TextRenderingHint = System::Drawing::Text::TextRenderingHint::ClearTypeGridFit;
+
+                    int boxW = Math::Min(500, pbW - 40);
+                    int boxH = Math::Min(210, pbH - 40);
+                    int boxX = (pbW - boxW) / 2;
+                    int boxY = (pbH - boxH) / 2;
+
+                    System::Drawing::Pen^ dashedPen = gcnew System::Drawing::Pen(System::Drawing::Color::FromArgb(75, 75, 82), 2.0f);
+                    dashedPen->DashStyle = System::Drawing::Drawing2D::DashStyle::Dash;
+                    e->Graphics->DrawRectangle(dashedPen, boxX, boxY, boxW, boxH);
+                    delete dashedPen;
+
+                    System::Drawing::Font^ titleFont = gcnew System::Drawing::Font(L"Segoe UI", 16, System::Drawing::FontStyle::Bold);
+                    System::Drawing::Font^ subFont = gcnew System::Drawing::Font(L"Segoe UI", 10.5f, System::Drawing::FontStyle::Regular);
+                    System::Drawing::Font^ tipFont = gcnew System::Drawing::Font(L"Segoe UI", 9, System::Drawing::FontStyle::Regular);
+
+                    System::Drawing::SolidBrush^ titleBrush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(215, 215, 222));
+                    System::Drawing::SolidBrush^ subBrush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(150, 150, 158));
+                    System::Drawing::SolidBrush^ tipBrush = gcnew System::Drawing::SolidBrush(System::Drawing::Color::FromArgb(0, 150, 255));
+
+                    System::Drawing::StringFormat^ sf = gcnew System::Drawing::StringFormat();
+                    sf->Alignment = System::Drawing::StringAlignment::Center;
+                    sf->LineAlignment = System::Drawing::StringAlignment::Center;
+
+                    e->Graphics->DrawString(L"No Image Loaded", titleFont, titleBrush, System::Drawing::RectangleF((float)boxX, (float)(boxY + 35), (float)boxW, 35.0f), sf);
+                    e->Graphics->DrawString(L"Click \"Load Image\" below or drag & drop an image here", subFont, subBrush, System::Drawing::RectangleF((float)boxX, (float)(boxY + 80), (float)boxW, 30.0f), sf);
+                    e->Graphics->DrawString(L"Supported Formats: JPG, PNG, BMP, TGA", tipFont, tipBrush, System::Drawing::RectangleF((float)boxX, (float)(boxY + 125), (float)boxW, 25.0f), sf);
+
+                    delete titleFont;
+                    delete subFont;
+                    delete tipFont;
+                    delete titleBrush;
+                    delete subBrush;
+                    delete tipBrush;
+                    delete sf;
+                }
+            }
+
+            // 2. Draw interactive crop selection rectangle
             if (isSelectingCrop) {
                 int x = Math::Min(cropStartX, cropCurrentX);
                 int y = Math::Min(cropStartY, cropCurrentY);

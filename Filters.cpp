@@ -1,4 +1,5 @@
 #include "Filters.h"
+#include <cstdlib>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -301,11 +302,18 @@ void applySunlight(Image& img) {
 
 void applyTV(Image& img) {
     for (int y = 0; y < img.height; ++y) {
-        if ((y % 20) < 10) {
-            for (int x = 0; x < img.width; ++x) {
-                for (int c = 0; c < 3; ++c) {
-                    img(x, y, c) = (unsigned char)(img(x, y, c) * 0.3);
+        bool isScanline = (y % 3 == 0);
+        for (int x = 0; x < img.width; ++x) {
+            int noise = (rand() % 21) - 10;
+            for (int c = 0; c < 3; ++c) {
+                int val = img(x, y, c);
+                if (isScanline) {
+                    val = (int)(val * 0.75);
                 }
+                val += noise;
+                if (val < 0) val = 0;
+                else if (val > 255) val = 255;
+                img(x, y, c) = (unsigned char)val;
             }
         }
     }
